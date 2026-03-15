@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DarjaSurf — Road Trips de Surf au Maroc</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    :root{
+      --bg:hsl(220,15%,8%);--card:hsl(220,13%,12%);--secondary:hsl(220,20%,18%);
+      --muted:hsl(220,17%,15%);--text:hsl(200,6%,95%);--text-muted:hsl(200,10%,80%);
+      --primary:hsl(200,50%,65%);--accent:hsl(180,35%,45%);--border:hsl(220,20%,25%);
+      --sun-orange:#f97316;--sun-amber:#f59e0b;--sun-red:#dc2626;--radius:.5rem;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;line-height:1.6;overflow-x:hidden}
+
+    /* ── NAV ── */
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:.875rem 2rem;background:rgba(10,11,17,.88);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.06)}
+    .logo{display:flex;align-items:center;gap:.5rem;text-decoration:none}
+    .logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--sun-orange),var(--primary));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+    .logo-text{font-family:'Cinzel',serif;font-size:1.2rem;font-weight:700;background:linear-gradient(to right,var(--sun-orange),var(--primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .nav-links{display:flex;align-items:center;gap:2rem;list-style:none}
+    .nav-links a{color:var(--text-muted);text-decoration:none;font-size:.875rem;transition:color .2s}
+    .nav-links a:hover{color:var(--text)}
+    .nav-auth{display:flex;gap:.625rem;align-items:center}
+    .btn{padding:.5rem 1.25rem;border-radius:var(--radius);font-size:.875rem;font-weight:500;cursor:pointer;border:none;transition:all .2s;font-family:'DM Sans',sans-serif}
+    .btn-ghost{background:transparent;color:var(--text-muted);border:1px solid var(--border)}
+    .btn-ghost:hover{color:var(--text);border-color:var(--primary)}
+    .btn-primary{background:linear-gradient(135deg,var(--sun-orange),#ea580c);color:#fff}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(249,115,22,.4)}
+    .btn-lg{padding:.875rem 2rem;font-size:1rem}
+    /* User menu */
+    .user-menu{position:relative}
+    .user-btn{display:flex;align-items:center;gap:.5rem;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:.4rem .875rem .4rem .4rem;cursor:pointer;transition:border-color .2s}
+    .user-btn:hover{border-color:var(--primary)}
+    .user-avatar-sm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--primary));display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:#fff;flex-shrink:0}
+    .user-name-sm{font-size:.825rem;font-weight:500}
+    .user-dropdown{position:absolute;top:calc(100% + 6px);right:0;background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius)*1.5);min-width:180px;overflow:hidden;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:200}
+    .user-dropdown.open{display:block}
+    .dd-item{padding:.625rem 1rem;font-size:.835rem;cursor:pointer;display:flex;align-items:center;gap:.5rem;transition:background .15s}
+    .dd-item:hover{background:var(--secondary)}
+    .dd-item.danger{color:#f87171}
+    .dd-sep{height:1px;background:var(--border);margin:.25rem 0}
+
+    /* ── HERO ── */
+    .hero{position:relative;height:auto;min-height:0;overflow:hidden;
+      background:linear-gradient(160deg,#07081a 0%,#0d1628 35%,#0c3a4e 65%,#0f4c62 100%)}
+    .hero::before{content:'';position:absolute;inset:0;
+      background:radial-gradient(ellipse 70% 60% at 70% 40%,rgba(249,115,22,.18) 0%,transparent 65%),
+                 radial-gradient(ellipse 50% 40% at 20% 80%,rgba(90,172,224,.1) 0%,transparent 60%);
+      pointer-events:none}
+    /* subtle CSS wave at bottom */
+    .hero-wave{position:absolute;bottom:-1px;left:0;width:100%;overflow:hidden;line-height:0;pointer-events:none}
+    .hero-wave svg{display:block;width:100%}
+    .hero-content{position:relative;z-index:1;padding:7rem 2rem 3.5rem;display:flex;flex-direction:column;align-items:center;text-align:center}
+    .hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(249,115,22,.15);border:1px solid rgba(249,115,22,.3);color:var(--sun-orange);padding:.25rem .875rem;border-radius:999px;font-size:.75rem;font-weight:600;margin-bottom:.875rem;animation:up .8s ease both}
+    .hero-title{font-family:'Cinzel',serif;font-size:clamp(1.75rem,5vw,3.25rem);font-weight:900;line-height:1.05;margin-bottom:.75rem;animation:up .8s .1s ease both}
+    .hero-title .glow{background:linear-gradient(135deg,var(--sun-amber),var(--sun-orange),#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .hero-sub{font-size:.95rem;color:var(--text-muted);max-width:480px;margin-bottom:1.25rem;animation:up .8s .2s ease both}
+    .hero-cta{display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center;animation:up .8s .3s ease both}
+    .hero-stats{display:flex;gap:2rem;margin-top:1.5rem;animation:up .8s .4s ease both}
+    .stat-n{font-family:'Cinzel',serif;font-size:1.4rem;font-weight:700;color:var(--sun-orange)}
+    .stat-l{font-size:.7rem;color:var(--text-muted)}
+    @keyframes up{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+    /* ── DIVIDER ── */
+    .divider{height:3px;background:linear-gradient(90deg,var(--sun-red),var(--sun-orange),var(--sun-amber),var(--accent),var(--primary),var(--accent),var(--sun-amber),var(--sun-orange),var(--sun-red))}
+
+    /* ── SECTIONS ── */
+    .section{padding:5rem 2rem;max-width:1200px;margin:0 auto}
+    .s-label{font-size:.75rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--sun-orange);margin-bottom:.6rem}
+    .s-title{font-family:'Cinzel',serif;font-size:clamp(1.6rem,3.5vw,2.25rem);font-weight:700;margin-bottom:2.75rem}
+    .how-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1.25rem}
+    .how-card{background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius)*2);padding:1.625rem;transition:border-color .2s,transform .2s}
+    .how-card:hover{border-color:var(--primary);transform:translateY(-4px)}
+    .how-icon{width:46px;height:46px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:.875rem}
+    .how-card:nth-child(1) .how-icon{background:rgba(249,115,22,.12)}
+    .how-card:nth-child(2) .how-icon{background:rgba(90,172,224,.12)}
+    .how-card:nth-child(3) .how-icon{background:rgba(71,163,154,.12)}
+    .how-card:nth-child(4) .how-icon{background:rgba(245,158,11,.12)}
+    .how-card h3{font-weight:600;font-size:.95rem;margin-bottom:.4rem}
+    .how-card p{font-size:.835rem;color:var(--text-muted)}
+
+    /* ── SEARCH ── */
+    .search-bar{background:var(--muted);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:1.75rem 2rem}
+    .search-inner{max-width:1200px;margin:0 auto}
+    .search-hint{font-size:.8rem;color:var(--text-muted);margin-bottom:.875rem}
+    .search-row{display:flex;gap:.875rem;flex-wrap:wrap;align-items:center}
+    .sf{position:relative;flex:1;min-width:200px}
+    .sf input,.sf select{width:100%;padding:.7rem 1rem .7rem 2.6rem;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:inherit;font-size:.85rem;outline:none;transition:border-color .2s;appearance:none}
+    .sf input:focus,.sf select:focus{border-color:var(--primary)}
+    .sf .si{position:absolute;left:.8rem;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:.95rem;pointer-events:none}
+    .ac-list{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);z-index:50;display:none;max-height:240px;overflow-y:auto}
+    .ac-list.open{display:block}
+    .ac-item{padding:.55rem 1rem;font-size:.835rem;cursor:pointer;display:flex;align-items:center;gap:.6rem}
+    .ac-item:hover{background:var(--secondary)}
+    .wave-tag{font-size:.65rem;color:var(--primary);background:rgba(90,172,224,.1);padding:.1rem .4rem;border-radius:999px;white-space:nowrap}
+
+    /* ── TRIPS ── */
+    .trips-hd{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2rem}
+    .trips-count{font-size:.835rem;color:var(--text-muted)}
+    .trips-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:1.375rem}
+    .trip-card{background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius)*2);overflow:hidden;transition:border-color .2s,transform .2s,box-shadow .2s;cursor:pointer}
+    .trip-card:hover{border-color:rgba(249,115,22,.4);transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.35)}
+    .trip-img{width:100%;height:175px;display:flex;align-items:center;justify-content:center;font-size:3.2rem;position:relative;overflow:hidden}
+    .trip-img::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(10,11,17,.8),transparent)}
+    .lvl-badge{position:absolute;top:.7rem;right:.7rem;z-index:1;padding:.22rem .6rem;border-radius:999px;font-size:.68rem;font-weight:600}
+    .lv-beginner{background:rgba(34,197,94,.18);color:#4ade80;border:1px solid rgba(34,197,94,.28)}
+    .lv-intermediate{background:rgba(245,158,11,.18);color:#fbbf24;border:1px solid rgba(245,158,11,.28)}
+    .lv-advanced{background:rgba(249,115,22,.18);color:#fb923c;border:1px solid rgba(249,115,22,.28)}
+    .lv-expert{background:rgba(239,68,68,.18);color:#f87171;border:1px solid rgba(239,68,68,.28)}
+    .trip-body{padding:1.125rem}
+    .trip-dates{font-size:.775rem;color:var(--text-muted);margin-bottom:.4rem}
+    .trip-route{display:flex;align-items:center;gap:.4rem;font-weight:600;font-size:.975rem;margin-bottom:.875rem}
+    .arr{color:var(--sun-orange)}
+    .trip-meta{display:flex;gap:1rem;font-size:.775rem;color:var(--text-muted);margin-bottom:1.1rem;flex-wrap:wrap}
+    .trip-meta span{display:flex;align-items:center;gap:.3rem}
+    .trip-ft{display:flex;align-items:center;justify-content:space-between;padding-top:.875rem;border-top:1px solid var(--border)}
+    .host{display:flex;align-items:center;gap:.5rem}
+    .avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--primary));display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:#fff}
+    .host-name{font-size:.775rem;font-weight:500}
+    .price{font-size:1.05rem;font-weight:700;color:var(--sun-orange)}
+    .price small{font-size:.7rem;font-weight:400;color:var(--text-muted)}
+    .btn-join{background:rgba(249,115,22,.1);color:var(--sun-orange);border:1px solid rgba(249,115,22,.3);padding:.45rem 1.1rem;border-radius:var(--radius);font-size:.775rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit}
+    .btn-join:hover{background:var(--sun-orange);color:#fff}
+    .btn-requested{background:rgba(90,172,224,.1);color:var(--primary);border:1px solid rgba(90,172,224,.3);padding:.45rem 1.1rem;border-radius:var(--radius);font-size:.775rem;font-weight:600;font-family:inherit;cursor:default}
+    .btn-mine{background:rgba(71,163,154,.1);color:var(--accent);border:1px solid rgba(71,163,154,.3);padding:.45rem 1.1rem;border-radius:var(--radius);font-size:.775rem;font-weight:600;font-family:inherit;cursor:default}
+
+    /* ── BASE MODAL ── */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(5px);z-index:200;display:none;align-items:center;justify-content:center;padding:1rem}
+    .overlay.open{display:flex}
+    .modal{background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius)*3);padding:2rem;width:100%;max-width:430px;position:relative;animation:mi .28s ease;max-height:90vh;overflow-y:auto}
+    @keyframes mi{from{opacity:0;transform:scale(.95) translateY(14px)}to{opacity:1;transform:scale(1) translateY(0)}}
+    .modal-close{position:absolute;top:.875rem;right:.875rem;background:none;border:none;color:var(--text-muted);font-size:1.1rem;cursor:pointer;line-height:1;z-index:1}
+    .modal-logo{display:flex;align-items:center;gap:.5rem;margin-bottom:1.375rem}
+    .tabs{display:flex;background:var(--muted);border-radius:var(--radius);padding:.2rem;margin-bottom:1.375rem}
+    .tab{flex:1;text-align:center;padding:.45rem;border-radius:calc(var(--radius) - 2px);font-size:.835rem;cursor:pointer;transition:all .2s;border:none;background:none;color:var(--text-muted);font-family:inherit}
+    .tab.active{background:var(--card);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+    .fg{margin-bottom:.875rem}
+    .fl{display:block;font-size:.775rem;color:var(--text-muted);margin-bottom:.3rem;font-weight:500}
+    .fi{width:100%;padding:.7rem 1rem;background:var(--secondary);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:inherit;font-size:.85rem;outline:none;transition:border-color .2s;resize:vertical}
+    .fi:focus{border-color:var(--primary)}
+    .fg-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+    .lv-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.45rem}
+    .lv-opt{border:1px solid var(--border);border-radius:var(--radius);padding:.65rem;cursor:pointer;transition:all .2s;text-align:center}
+    .lv-opt input{display:none}
+    .lv-opt:has(input:checked){border-color:var(--sun-orange);background:rgba(249,115,22,.1)}
+    .lv-emoji{font-size:1.4rem;display:block;margin-bottom:.2rem}
+    .lv-name{font-size:.72rem;font-weight:600}
+    .lv-desc{font-size:.62rem;color:var(--text-muted)}
+    .boards-row{display:flex;align-items:center;gap:.6rem}
+    .boards-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--secondary);color:var(--text);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+    .boards-btn:hover{border-color:var(--primary);color:var(--primary)}
+    .btn-submit{width:100%;padding:.8rem;background:linear-gradient(135deg,var(--sun-orange),#ea580c);color:#fff;border:none;border-radius:var(--radius);font-family:inherit;font-size:.9rem;font-weight:600;cursor:pointer;margin-top:.875rem;transition:all .2s}
+    .btn-submit:hover{box-shadow:0 4px 20px rgba(249,115,22,.4);transform:translateY(-1px)}
+    .error-msg{color:#f87171;font-size:.78rem;margin-top:.3rem;display:none}
+
+    /* ── TRIP DETAIL MODAL ── */
+    .td-modal{background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius)*3);width:100%;max-width:860px;position:relative;animation:mi .28s ease;overflow:hidden;max-height:90vh;display:flex;flex-direction:column}
+    .td-header{padding:1.5rem 1.75rem 1.25rem;border-bottom:1px solid var(--border);flex-shrink:0}
+    .td-route{font-family:'Cinzel',serif;font-size:1.35rem;font-weight:700;display:flex;align-items:center;gap:.625rem;margin-bottom:.625rem}
+    .td-meta-row{display:flex;gap:1rem;flex-wrap:wrap;font-size:.8rem;color:var(--text-muted)}
+    .td-meta-row span{display:flex;align-items:center;gap:.3rem}
+    .td-body{display:grid;grid-template-columns:1fr 360px;flex:1;overflow:hidden}
+    .td-left{padding:1.5rem 1.75rem;overflow-y:auto;display:flex;flex-direction:column;gap:1.25rem}
+    .td-right{border-left:1px solid var(--border);position:relative}
+    #tripMap{height:100%;min-height:300px}
+    .td-desc-title{font-size:.72rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--sun-orange);margin-bottom:.5rem}
+    .td-desc{font-size:.875rem;color:var(--text-muted);line-height:1.7}
+    .td-stops{display:flex;flex-direction:column;gap:.5rem}
+    .td-stop{display:flex;align-items:center;gap:.625rem;font-size:.835rem}
+    .stop-dot{width:8px;height:8px;border-radius:50%;background:var(--sun-orange);flex-shrink:0}
+    .stop-dot.end{background:var(--primary)}
+    .td-footer{padding:1.25rem 1.75rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+    .td-host{display:flex;align-items:center;gap:.625rem}
+    /* Leaflet tooltip override */
+    .leaflet-tooltip{background:hsl(220,13%,12%);border:1px solid hsl(220,20%,25%);color:hsl(200,6%,95%);font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:600;padding:.25rem .6rem;border-radius:.375rem;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+    .leaflet-tooltip-top::before{border-top-color:hsl(220,20%,25%)}
+
+    /* ── PROPOSE TRIP MODAL ── */
+    .propose-modal{background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius)*3);width:100%;max-width:600px;position:relative;animation:mi .28s ease;max-height:92vh;overflow-y:auto;padding:2rem}
+
+    /* ── JOIN REQUEST MODAL ── */
+    .join-trip-info{background:var(--muted);border:1px solid var(--border);border-radius:calc(var(--radius)*1.5);padding:1rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:.875rem}
+    .join-trip-emoji{font-size:2rem}
+    .join-trip-route{font-weight:600;font-size:.975rem}
+    .join-trip-meta{font-size:.775rem;color:var(--text-muted);margin-top:.2rem}
+
+    /* ── TOAST ── */
+    .toast{position:fixed;bottom:2rem;right:2rem;background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius)*2);padding:.875rem 1.25rem;font-size:.875rem;display:flex;align-items:center;gap:.625rem;box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:500;transform:translateY(8px);opacity:0;transition:all .3s;pointer-events:none}
+    .toast.show{transform:translateY(0);opacity:1}
+    .toast-icon{font-size:1.1rem}
+
+    /* ── FOOTER ── */
+    footer{background:var(--card);border-top:1px solid var(--border);padding:3rem 2rem 1.75rem}
+    .footer-inner{max-width:1200px;margin:0 auto}
+    .footer-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3rem;margin-bottom:2.5rem}
+    .footer-brand p{color:var(--text-muted);font-size:.835rem;margin-top:.6rem;max-width:240px}
+    .fc h4{font-size:.72rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.875rem}
+    .fc ul{list-style:none;display:flex;flex-direction:column;gap:.4rem}
+    .fc a{color:var(--text-muted);text-decoration:none;font-size:.835rem;transition:color .2s}
+    .fc a:hover{color:var(--text)}
+    .footer-bot{border-top:1px solid var(--border);padding-top:1.25rem;display:flex;justify-content:space-between;align-items:center;font-size:.775rem;color:var(--text-muted)}
+
+    ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+    @media(max-width:768px){
+      .nav-links{display:none}
+      .footer-top{grid-template-columns:1fr 1fr}
+      .trips-grid{grid-template-columns:1fr}
+      .hero-stats{gap:1.5rem}
+      .td-body{grid-template-columns:1fr}
+      .td-right{border-left:none;border-top:1px solid var(--border)}
+      #tripMap{min-height:220px}
+      .fg-row{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo">
+    <div class="logo-icon">🏄</div>
+    <span class="logo-text">DarjaSurf</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#trips">Road Trips</a></li>
+    <li><a href="#spots">Spots</a></li>
+    <li><a href="#community">Communauté</a></li>
+  </ul>
+  <div class="nav-auth" id="navAuth"></div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">🌊 Surf Road Trips — Maroc</div>
+    <h1 class="hero-title">Explorez le Maroc<br><span class="glow">en Surf</span></h1>
+    <p class="hero-sub">Touristes ou locaux, surfeurs débutants ou experts — trouvez des compagnons de trip, découvrez les meilleurs spots et parcourez les côtes marocaines du nord au sud.</p>
+    <div class="hero-cta">
+      <button class="btn btn-primary btn-lg" onclick="onHeroCTA()">Rejoindre la communauté</button>
+      <button class="btn btn-ghost btn-lg" onclick="document.getElementById('trips').scrollIntoView({behavior:'smooth'})">Voir les trips</button>
+    </div>
+    <div class="hero-stats">
+      <div><div class="stat-n" id="statSpots">24</div><div class="stat-l">Spots actifs</div></div>
+      <div><div class="stat-n" id="statSurfers">138</div><div class="stat-l">Surfeurs</div></div>
+      <div><div class="stat-n" id="statTrips">47</div><div class="stat-l">Road trips</div></div>
+    </div>
+  </div>
+  <!-- wave separator -->
+  <div class="hero-wave">
+    <svg viewBox="0 0 1440 54" preserveAspectRatio="none" height="54" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,32 C180,54 360,10 540,28 C720,46 900,8 1080,26 C1260,44 1380,18 1440,24 L1440,54 L0,54 Z" fill="hsl(220,15%,8%)"/>
+    </svg>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SEARCH -->
+<div class="search-bar">
+  <div class="search-inner">
+    <p class="search-hint">🔍 Trouvez votre prochain road trip au Maroc</p>
+    <div class="search-row">
+      <div class="sf">
+        <span class="si">📍</span>
+        <input type="text" id="spotInput" placeholder="Spot ou ville (ex: Taghazout…)" autocomplete="off">
+        <div class="ac-list" id="acList"></div>
+      </div>
+      <div class="sf" style="flex:0 1 155px;min-width:155px">
+        <span class="si">🎚</span>
+        <select id="filterLevel" style="padding-left:2.5rem" onchange="renderTrips()">
+          <option value="">Tous niveaux</option>
+          <option value="beginner">Débutant</option>
+          <option value="intermediate">Intermédiaire</option>
+          <option value="advanced">Avancé</option>
+          <option value="expert">Expert</option>
+        </select>
+      </div>
+      <div class="sf" style="flex:0 1 155px;min-width:155px">
+        <span class="si">👤</span>
+        <select id="filterSeats" style="padding-left:2.5rem" onchange="renderTrips()">
+          <option value="">Places dispo</option>
+          <option value="1">1 place</option>
+          <option value="2">2 places</option>
+          <option value="3">3+ places</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" style="white-space:nowrap" onclick="renderTrips()">Rechercher</button>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="section">
+  <p class="s-label">Comment ça marche</p>
+  <h2 class="s-title">Simple comme une vague parfaite</h2>
+  <div class="how-grid">
+    <div class="how-card"><div class="how-icon">📍</div><h3>Explorez les Spots</h3><p>Touriste ou local, découvrez les meilleurs spots du Maroc de l'Atlantique à la Méditerranée.</p></div>
+    <div class="how-card"><div class="how-icon">🏄</div><h3>Proposez un Trip</h3><p>Créez un road trip ouvert à tous — indiquez le niveau, les dates, les spots et l'ambiance souhaitée.</p></div>
+    <div class="how-card"><div class="how-icon">👥</div><h3>Voyagez Ensemble</h3><p>Locaux et voyageurs se retrouvent pour partager la route, les sessions et la culture du surf.</p></div>
+    <div class="how-card"><div class="how-icon">🌅</div><h3>Vivez le Maroc</h3><p>Des rencontres authentiques, des vagues inoubliables et des souvenirs qui durent toute une vie.</p></div>
+  </div>
+</div>
+
+<!-- TRIPS -->
+<div class="section" id="trips" style="padding-top:0">
+  <div class="trips-hd">
+    <div>
+      <p class="s-label">Road Trips</p>
+      <h2 class="s-title" style="margin-bottom:0">Trips disponibles</h2>
+    </div>
+    <div style="display:flex;align-items:center;gap:.875rem">
+      <span class="trips-count" id="tripsCount"></span>
+      <button class="btn btn-primary" id="btnProposeNav" onclick="openProposeModal()" style="display:none">+ Proposer un trip</button>
+    </div>
+  </div>
+  <div class="trips-grid" id="tripsGrid"></div>
+</div>
+
+<!-- ═══════════════════════ TRIP DETAIL MODAL ═══════════════════════ -->
+<div class="overlay" id="tripModal">
+  <div class="td-modal">
+    <button class="modal-close" onclick="closeTripModal()">✕</button>
+    <div class="td-header">
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.625rem">
+        <span id="td-emoji" style="font-size:2rem"></span>
+        <div>
+          <div class="td-route"><span id="td-from"></span><span class="arr">→</span><span id="td-to"></span></div>
+          <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+            <span id="td-lvlbadge" class="lvl-badge" style="position:static"></span>
+            <span style="font-size:.775rem;color:var(--text-muted)" id="td-dates"></span>
+          </div>
+        </div>
+      </div>
+      <div class="td-meta-row">
+        <span>📏 <span id="td-km"></span></span>
+        <span>🗓 <span id="td-days"></span></span>
+        <span>👤 <span id="td-seats"></span></span>
+        <span>🏄 <span id="td-boards"></span> boards max</span>
+      </div>
+    </div>
+    <div class="td-body">
+      <div class="td-left">
+        <div>
+          <p class="td-desc-title">Description du trip</p>
+          <p class="td-desc" id="td-desc"></p>
+        </div>
+        <div>
+          <p class="td-desc-title">Itinéraire</p>
+          <div class="td-stops" id="td-stops"></div>
+        </div>
+      </div>
+      <div class="td-right"><div id="tripMap"></div></div>
+    </div>
+    <div class="td-footer">
+      <div class="td-host">
+        <div class="avatar" id="td-av"></div>
+        <div><div class="host-name" id="td-hostname"></div><div style="font-size:.72rem;color:var(--text-muted)">Organisateur</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:1rem">
+        <div class="price" id="td-price"></div>
+        <div id="td-action-btn"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ AUTH MODAL ═══════════════════════ -->
+<div class="overlay" id="authModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAuthModal()">✕</button>
+    <div class="modal-logo">
+      <div class="logo-icon" style="width:26px;height:26px;font-size:.9rem">🏄</div>
+      <span style="font-family:'Cinzel',serif;font-weight:700;background:linear-gradient(to right,#f97316,#5aace0);-webkit-background-clip:text;-webkit-text-fill-color:transparent">DarjaSurf</span>
+    </div>
+    <div class="tabs">
+      <button class="tab active" id="tab-login" onclick="switchAuthTab('login')">Connexion</button>
+      <button class="tab" id="tab-register" onclick="switchAuthTab('register')">S'inscrire</button>
+    </div>
+    <!-- Login -->
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="loginEmail" placeholder="you@example.com" required></div>
+      <div class="fg"><label class="fl">Mot de passe</label><input type="password" class="fi" id="loginPass" placeholder="••••••••" required></div>
+      <p class="error-msg" id="loginError">Email ou mot de passe incorrect.</p>
+      <button type="submit" class="btn-submit">Se connecter 🏄</button>
+    </form>
+    <!-- Register -->
+    <form id="registerForm" style="display:none" onsubmit="handleRegister(event)">
+      <div class="fg"><label class="fl">Nom complet</label><input type="text" class="fi" id="regName" placeholder="Yassine El Mansouri" required></div>
+      <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="regEmail" placeholder="you@example.com" required></div>
+      <div class="fg"><label class="fl">Mot de passe</label><input type="password" class="fi" id="regPass" placeholder="••••••••" minlength="6" required></div>
+      <div class="fg">
+        <label class="fl">Niveau de surf</label>
+        <div class="lv-grid">
+          <label class="lv-opt"><input type="radio" name="reg-level" value="beginner" checked><span class="lv-emoji">🟢</span><span class="lv-name">Débutant</span><span class="lv-desc">Moins de 1 an</span></label>
+          <label class="lv-opt"><input type="radio" name="reg-level" value="intermediate"><span class="lv-emoji">🔵</span><span class="lv-name">Intermédiaire</span><span class="lv-desc">1–3 ans</span></label>
+          <label class="lv-opt"><input type="radio" name="reg-level" value="advanced"><span class="lv-emoji">🟠</span><span class="lv-name">Avancé</span><span class="lv-desc">3–7 ans</span></label>
+          <label class="lv-opt"><input type="radio" name="reg-level" value="expert"><span class="lv-emoji">🔴</span><span class="lv-name">Expert</span><span class="lv-desc">7+ ans</span></label>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="fl">Boards max à transporter</label>
+        <div class="boards-row">
+          <button type="button" class="boards-btn" onclick="chg('regBoards',-1)">−</button>
+          <input type="number" class="fi" id="regBoards" value="2" min="1" max="10" style="width:72px;text-align:center">
+          <button type="button" class="boards-btn" onclick="chg('regBoards',1)">+</button>
+          <span style="font-size:.78rem;color:var(--text-muted)">boards</span>
+        </div>
+      </div>
+      <p class="error-msg" id="regError">Cet email est déjà utilisé.</p>
+      <button type="submit" class="btn-submit">Créer mon profil 🌊</button>
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PROPOSE TRIP MODAL ═══════════════════════ -->
+<div class="overlay" id="proposeModal">
+  <div class="propose-modal">
+    <button class="modal-close" onclick="closeProposeModal()">✕</button>
+    <div style="margin-bottom:1.5rem">
+      <p class="s-label">Nouveau</p>
+      <h2 style="font-family:'Cinzel',serif;font-size:1.4rem;font-weight:700">Proposer un Road Trip</h2>
+    </div>
+    <form id="proposeForm" onsubmit="submitTrip(event)">
+      <div class="fg-row">
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Départ</label>
+          <div class="sf" style="min-width:0">
+            <span class="si">📍</span>
+            <input type="text" class="fi" id="pFrom" placeholder="Ex: Agadir" autocomplete="off" style="padding-left:2.5rem" required>
+            <div class="ac-list" id="acFrom"></div>
+          </div>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Arrivée</label>
+          <div class="sf" style="min-width:0">
+            <span class="si">🏁</span>
+            <input type="text" class="fi" id="pTo" placeholder="Ex: Dakhla" autocomplete="off" style="padding-left:2.5rem" required>
+            <div class="ac-list" id="acTo"></div>
+          </div>
+        </div>
+      </div>
+      <div class="fg-row" style="margin-top:.875rem">
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Date de départ</label>
+          <input type="date" class="fi" id="pDateStart" required>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Date de retour</label>
+          <input type="date" class="fi" id="pDateEnd" required>
+        </div>
+      </div>
+      <div class="fg-row" style="margin-top:.875rem">
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Niveau minimum</label>
+          <select class="fi" id="pLevel">
+            <option value="beginner">Débutant</option>
+            <option value="intermediate">Intermédiaire</option>
+            <option value="advanced">Avancé</option>
+            <option value="expert">Expert</option>
+          </select>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Places disponibles</label>
+          <div class="boards-row">
+            <button type="button" class="boards-btn" onclick="chg('pSeats',-1)">−</button>
+            <input type="number" class="fi" id="pSeats" value="3" min="1" max="10" style="width:72px;text-align:center">
+            <button type="button" class="boards-btn" onclick="chg('pSeats',1)">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="fg-row" style="margin-top:.875rem">
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Boards max acceptées</label>
+          <div class="boards-row">
+            <button type="button" class="boards-btn" onclick="chg('pBoards',-1)">−</button>
+            <input type="number" class="fi" id="pBoards" value="3" min="1" max="12" style="width:72px;text-align:center">
+            <button type="button" class="boards-btn" onclick="chg('pBoards',1)">+</button>
+          </div>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">Prix par personne</label>
+          <div style="display:flex;gap:.5rem">
+            <select class="fi" id="pCurrency" style="flex:0 0 90px">
+              <option value="MAD" selected>MAD</option>
+              <option value="EUR">EUR €</option>
+              <option value="USD">USD $</option>
+            </select>
+            <input type="number" class="fi" id="pPrice" placeholder="2500" min="0" required style="flex:1">
+          </div>
+        </div>
+      </div>
+      <div class="fg" style="margin-top:.875rem">
+        <label class="fl">Description du trip</label>
+        <textarea class="fi" id="pDesc" rows="4" placeholder="Décris l'ambiance, les spots prévus, l'hébergement…" required></textarea>
+      </div>
+      <button type="submit" class="btn-submit">Publier mon trip 🚀</button>
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════════════════ JOIN REQUEST MODAL ═══════════════════════ -->
+<div class="overlay" id="joinModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeJoinModal()">✕</button>
+    <div style="margin-bottom:1.25rem">
+      <p class="s-label">Demande</p>
+      <h2 style="font-family:'Cinzel',serif;font-size:1.25rem;font-weight:700">Rejoindre ce trip</h2>
+    </div>
+    <div class="join-trip-info" id="joinTripInfo"></div>
+    <form id="joinForm" onsubmit="submitJoin(event)">
+      <div class="fg">
+        <label class="fl">Message à l'organisateur</label>
+        <textarea class="fi" id="joinMsg" rows="3" placeholder="Présentez-vous, votre niveau, vos attentes…" required></textarea>
+      </div>
+      <div class="fg">
+        <label class="fl">Combien de boards vous apportez ?</label>
+        <div class="boards-row">
+          <button type="button" class="boards-btn" onclick="chg('joinBoards',-1)">−</button>
+          <input type="number" class="fi" id="joinBoards" value="1" min="0" max="5" style="width:72px;text-align:center">
+          <button type="button" class="boards-btn" onclick="chg('joinBoards',1)">+</button>
+          <span style="font-size:.78rem;color:var(--text-muted)">boards</span>
+        </div>
+      </div>
+      <button type="submit" class="btn-submit">Envoyer la demande 📬</button>
+    </form>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><span class="toast-icon" id="toastIcon"></span><span id="toastMsg"></span></div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="#" class="logo"><div class="logo-icon">🏄</div><span class="logo-text">DarjaSurf</span></a>
+        <p>La plateforme de surf road trips au Maroc — ouverte aux touristes du monde entier et aux surfeurs locaux. Surfez, partagez, explorez.</p>
+      </div>
+      <div class="fc"><h4>Spots Maroc</h4><ul><li><a href="#">Taghazout</a></li><li><a href="#">Anchor Point</a></li><li><a href="#">Imsouane</a></li><li><a href="#">Essaouira</a></li><li><a href="#">Dakhla</a></li></ul></div>
+      <div class="fc"><h4>Communauté</h4><ul><li><a href="#" onclick="openProposeModal();return false">Proposer un trip</a></li><li><a href="#">Forum</a></li><li><a href="#">Blog</a></li></ul></div>
+      <div class="fc"><h4>Légal</h4><ul><li><a href="#">Confidentialité</a></li><li><a href="#">CGU</a></li><li><a href="#">Contact</a></li></ul></div>
+    </div>
+    <div class="footer-bot">
+      <span>© 2026 DarjaSurf — Tous droits réservés</span>
+      <span>🌊 Fait avec passion au Maroc</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  DATABASE (localStorage)
+// ══════════════════════════════════════════════════════
+const DB = {
+  getUsers:    () => JSON.parse(localStorage.getItem('ds_users')    || '[]'),
+  getSession:  () => JSON.parse(localStorage.getItem('ds_session')  || 'null'),
+  getTrips:    () => JSON.parse(localStorage.getItem('ds_trips')    || '[]'),
+  getRequests: () => JSON.parse(localStorage.getItem('ds_requests') || '[]'),
+  saveUsers:    u => localStorage.setItem('ds_users',    JSON.stringify(u)),
+  saveSession:  s => localStorage.setItem('ds_session',  JSON.stringify(s)),
+  saveTrips:    t => localStorage.setItem('ds_trips',    JSON.stringify(t)),
+  saveRequests: r => localStorage.setItem('ds_requests', JSON.stringify(r)),
+};
+
+// ══════════════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════════════
+const CITY_COORDS = {
+  'Agadir':          [30.4278, -9.5981],
+  'Taghazout':       [30.5441, -9.7097],
+  'Imsouane':        [30.8493, -9.8231],
+  'Essaouira':       [31.5085, -9.7595],
+  'Safi':            [32.2994, -9.2372],
+  'Mirleft':         [29.5757, -10.0257],
+  'Tifnit':          [29.9883, -9.9117],
+  'Dakhla':          [23.7136, -15.9355],
+  'Rabat':           [33.9716, -6.8498],
+  'Mehdia':          [34.2611, -6.6619],
+  'Casablanca':      [33.5731, -7.5898],
+  'Tanger':          [35.7595, -5.8340],
+  'Larache':         [35.1932, -6.1561],
+  'Oualidia':        [32.7329, -9.0354],
+  'Sidi Ifni':       [29.3797, -10.1726],
+  'Tan-Tan Plage':   [28.4362, -11.1012],
+  'Anchor Point':    [30.4912, -9.7289],
+  'Hash Point':      [30.5312, -9.7045],
+  'Mysteries':       [30.5188, -9.7112],
+  'Anza':            [30.3988, -9.6461],
+};
+
+// Surf spots — used in the main search bar
+const SPOTS = [
+  {name:'Taghazout',region:'Souss-Massa',wave:'Reef break'},
+  {name:'Anchor Point',region:'Agadir',wave:'Reef break'},
+  {name:'Hash Point',region:'Agadir',wave:'Point break'},
+  {name:'Mysteries',region:'Agadir',wave:'Reef break'},
+  {name:'Panoramas',region:'Agadir',wave:'Point break'},
+  {name:'La Source',region:'Agadir',wave:'Point break'},
+  {name:'Banana Point',region:'Agadir',wave:'Point break'},
+  {name:'Anza',region:'Agadir',wave:'Beach break'},
+  {name:'Boilers (Killers)',region:'Agadir',wave:'Reef break'},
+  {name:'Imsouane',region:'Souss-Massa',wave:'Point break'},
+  {name:'Essaouira',region:'Marrakech-Safi',wave:'Beach break'},
+  {name:'Safi',region:'Marrakech-Safi',wave:'Reef break'},
+  {name:'Mirleft',region:'Souss-Massa',wave:'Beach break'},
+  {name:'Tifnit',region:'Souss-Massa',wave:'Beach break'},
+  {name:'Sidi Ifni',region:'Souss-Massa',wave:'Beach break'},
+  {name:'Dakhla',region:'Dakhla-Oued Eddahab',wave:'Kite & surf'},
+  {name:'Oualidia',region:'Casablanca-Settat',wave:'Lagoon'},
+  {name:'Mehdia',region:'Rabat-Salé',wave:'Beach break'},
+  {name:'Larache',region:'Tanger-Tétouan',wave:'Beach break'},
+  {name:'Tan-Tan Plage',region:'Guelmim-Oued Noun',wave:'Beach break'},
+  {name:'Asilah',region:'Tanger-Tétouan',wave:'Beach break'},
+  {name:'Martil',region:'Tanger-Tétouan',wave:'Beach break'},
+  {name:'Cabo Negro',region:'Tanger-Tétouan',wave:'Beach break'},
+  {name:'Plage Blanche',region:'Guelmim-Oued Noun',wave:'Beach break'},
+];
+
+// All Moroccan cities + surf spots — used in propose trip form (departure / arrival)
+const PLACES = [
+  // ── Surf spots
+  {name:'Taghazout',region:'Souss-Massa',type:'Spot surf'},
+  {name:'Anchor Point',region:'Agadir',type:'Spot surf'},
+  {name:'Hash Point',region:'Agadir',type:'Spot surf'},
+  {name:'Mysteries',region:'Agadir',type:'Spot surf'},
+  {name:'Panoramas',region:'Agadir',type:'Spot surf'},
+  {name:'La Source',region:'Agadir',type:'Spot surf'},
+  {name:'Banana Point',region:'Agadir',type:'Spot surf'},
+  {name:'Anza',region:'Agadir',type:'Spot surf'},
+  {name:'Boilers (Killers)',region:'Agadir',type:'Spot surf'},
+  {name:'Imsouane',region:'Souss-Massa',type:'Spot surf'},
+  {name:'Tifnit',region:'Souss-Massa',type:'Spot surf'},
+  {name:'Plage Blanche',region:'Guelmim-Oued Noun',type:'Spot surf'},
+  {name:'Tan-Tan Plage',region:'Guelmim-Oued Noun',type:'Spot surf'},
+  {name:'Asilah',region:'Tanger-Tétouan',type:'Spot surf'},
+  {name:'Martil',region:'Tanger-Tétouan',type:'Spot surf'},
+  {name:'Oualidia',region:'Casablanca-Settat',type:'Spot surf'},
+  {name:'Mehdia',region:'Rabat-Salé',type:'Spot surf'},
+  {name:'Larache',region:'Tanger-Tétouan',type:'Spot surf'},
+  // ── Villes — Tanger-Tétouan-Al Hoceïma
+  {name:'Tanger',region:'Tanger-Tétouan',type:'Ville'},
+  {name:'Tétouan',region:'Tanger-Tétouan',type:'Ville'},
+  {name:'Al Hoceïma',region:'Tanger-Tétouan',type:'Ville'},
+  {name:'Chefchaouen',region:'Tanger-Tétouan',type:'Ville'},
+  {name:'Fnideq',region:'Tanger-Tétouan',type:'Ville'},
+  {name:'M\'diq',region:'Tanger-Tétouan',type:'Ville'},
+  // ── L'Oriental
+  {name:'Oujda',region:'L\'Oriental',type:'Ville'},
+  {name:'Nador',region:'L\'Oriental',type:'Ville'},
+  {name:'Berkane',region:'L\'Oriental',type:'Ville'},
+  {name:'Saïdia',region:'L\'Oriental',type:'Ville'},
+  {name:'Taourirt',region:'L\'Oriental',type:'Ville'},
+  // ── Fès-Meknès
+  {name:'Fès',region:'Fès-Meknès',type:'Ville'},
+  {name:'Meknès',region:'Fès-Meknès',type:'Ville'},
+  {name:'Ifrane',region:'Fès-Meknès',type:'Ville'},
+  {name:'Taza',region:'Fès-Meknès',type:'Ville'},
+  {name:'Sefrou',region:'Fès-Meknès',type:'Ville'},
+  // ── Rabat-Salé-Kénitra
+  {name:'Rabat',region:'Rabat-Salé',type:'Ville'},
+  {name:'Salé',region:'Rabat-Salé',type:'Ville'},
+  {name:'Kénitra',region:'Rabat-Salé',type:'Ville'},
+  {name:'Skhirat',region:'Rabat-Salé',type:'Ville'},
+  // ── Casablanca-Settat
+  {name:'Casablanca',region:'Casablanca-Settat',type:'Ville'},
+  {name:'Mohammedia',region:'Casablanca-Settat',type:'Ville'},
+  {name:'El Jadida',region:'Casablanca-Settat',type:'Ville'},
+  {name:'Settat',region:'Casablanca-Settat',type:'Ville'},
+  // ── Béni Mellal-Khénifra
+  {name:'Béni Mellal',region:'Béni Mellal-Khénifra',type:'Ville'},
+  {name:'Khénifra',region:'Béni Mellal-Khénifra',type:'Ville'},
+  {name:'Azilal',region:'Béni Mellal-Khénifra',type:'Ville'},
+  // ── Marrakech-Safi
+  {name:'Marrakech',region:'Marrakech-Safi',type:'Ville'},
+  {name:'Safi',region:'Marrakech-Safi',type:'Ville'},
+  {name:'Essaouira',region:'Marrakech-Safi',type:'Ville'},
+  {name:'El Kelâa des Sraghna',region:'Marrakech-Safi',type:'Ville'},
+  // ── Drâa-Tafilalet
+  {name:'Ouarzazate',region:'Drâa-Tafilalet',type:'Ville'},
+  {name:'Errachidia',region:'Drâa-Tafilalet',type:'Ville'},
+  {name:'Zagora',region:'Drâa-Tafilalet',type:'Ville'},
+  {name:'Tinghir',region:'Drâa-Tafilalet',type:'Ville'},
+  {name:'Merzouga',region:'Drâa-Tafilalet',type:'Ville'},
+  // ── Souss-Massa
+  {name:'Agadir',region:'Souss-Massa',type:'Ville'},
+  {name:'Tiznit',region:'Souss-Massa',type:'Ville'},
+  {name:'Taroudant',region:'Souss-Massa',type:'Ville'},
+  {name:'Sidi Ifni',region:'Souss-Massa',type:'Ville'},
+  {name:'Mirleft',region:'Souss-Massa',type:'Ville'},
+  {name:'Inezgane',region:'Souss-Massa',type:'Ville'},
+  {name:'Ait Melloul',region:'Souss-Massa',type:'Ville'},
+  // ── Guelmim-Oued Noun
+  {name:'Guelmim',region:'Guelmim-Oued Noun',type:'Ville'},
+  {name:'Tan-Tan',region:'Guelmim-Oued Noun',type:'Ville'},
+  {name:'Assa',region:'Guelmim-Oued Noun',type:'Ville'},
+  {name:'Sidi Ifni',region:'Guelmim-Oued Noun',type:'Ville'},
+  // ── Laâyoune-Sakia El Hamra
+  {name:'Laâyoune',region:'Laâyoune-Sakia El Hamra',type:'Ville'},
+  {name:'Boujdour',region:'Laâyoune-Sakia El Hamra',type:'Ville'},
+  {name:'Tarfaya',region:'Laâyoune-Sakia El Hamra',type:'Ville'},
+  // ── Dakhla-Oued Eddahab
+  {name:'Dakhla',region:'Dakhla-Oued Eddahab',type:'Ville'},
+  {name:'Aousserd',region:'Dakhla-Oued Eddahab',type:'Ville'},
+];
+
+const STATIC_TRIPS = [
+  {
+    id:'s1', emoji:'🌊', bg:'linear-gradient(135deg,#0c4a6e,#7c2d12)',
+    dates:'28 Mar – 05 Avr 2026', from:'Agadir', to:'Taghazout',
+    km:'45 km', days:'8 jours', seats:2, boards:3,
+    lv:'advanced', lvLabel:'Avancé', av:'KR', name:'Karim R.', price:320,
+    desc:"Un trip intensif entre les deux capitales du surf marocain. On commence par les beach breaks d'Agadir pour se chauffer, puis on remonte vers les légendaires point breaks de Taghazout — Anchor Point, Hash Point, Mysteries. Sessions matin et soir garanties.",
+    stops:['Agadir — Plage Inezgane (warmup)','Taghazout Village','Anchor Point','Hash Point','Mysteries']
+  },
+  {
+    id:'s2', emoji:'🏄', bg:'linear-gradient(135deg,#164e63,#1e3a5f)',
+    dates:'02 Avr – 10 Avr 2026', from:'Imsouane', to:'Safi',
+    km:'210 km', days:'9 jours', seats:3, boards:4,
+    lv:'intermediate', lvLabel:'Intermédiaire', av:'SF', name:'Salma F.', price:280,
+    desc:"La route du nord : on part d'Imsouane et sa vague longue légendaire, puis on remonte vers Essaouira et ses vents parfaits pour le longboard, avant de terminer à Safi dont le reef break attire les pros du monde entier.",
+    stops:["Imsouane — La Cathédrale","Imsouane — La Baie","Essaouira — Plage Diabat","Safi — Reef break"]
+  },
+  {
+    id:'s3', emoji:'🌅', bg:'linear-gradient(135deg,#7c2d12,#0c4a6e)',
+    dates:'15 Avr – 25 Avr 2026', from:'Essaouira', to:'Dakhla',
+    km:'1 200 km', days:'11 jours', seats:1, boards:2,
+    lv:'expert', lvLabel:'Expert', av:'YB', name:'Youssef B.', price:650,
+    desc:"Le grand road trip atlantique, du nord au sud. On longe toute la côte sauvage, des vents d'Essaouira aux spots désertiques de Mirleft, jusqu'au paradis de kite de Dakhla. Bivouacs face à l'océan et magie du Sahara atlantique.",
+    stops:['Essaouira','Sidi Ifni','Mirleft','Tifnit','Tan-Tan Plage','Dakhla — Lagune']
+  },
+  {
+    id:'s4', emoji:'🐠', bg:'linear-gradient(135deg,#065f46,#0c4a6e)',
+    dates:'20 Avr – 27 Avr 2026', from:'Mirleft', to:'Tifnit',
+    km:'80 km', days:'7 jours', seats:4, boards:6,
+    lv:'beginner', lvLabel:'Débutant', av:'NH', name:'Nora H.', price:190,
+    desc:"Le trip idéal pour débutants ! La côte entre Mirleft et Tifnit offre des beach breaks doux et réguliers, parfaits pour progresser dans un cadre naturel préservé. Cours collectifs le matin, sessions libres l'après-midi.",
+    stops:["Mirleft — Plage principale","Plage Aftas","Sidi Mohammed Ben Abdallah","Tifnit"]
+  },
+  {
+    id:'s5', emoji:'🦅', bg:'linear-gradient(135deg,#3b0764,#0c4a6e)',
+    dates:'01 Mai – 08 Mai 2026', from:'Rabat', to:'Mehdia',
+    km:'35 km', days:'7 jours', seats:2, boards:3,
+    lv:'intermediate', lvLabel:'Intermédiaire', av:'AZ', name:'Amine Z.', price:240,
+    desc:"Les spots souvent oubliés du nord du Maroc. Rabat Oudayas offre une droite sympa en ville, puis Mehdia révèle ses bancs de sable changeants selon les marées. Culture, médinas et vagues moins fréquentées que le sud.",
+    stops:["Rabat — Plage des Oudayas","Plage de Salé","Mehdia — Pointe nord","Mehdia — Beach break central"]
+  },
+];
+
+const EMOJI_LIST = ['🌊','🏄','🌅','🐠','🦅','🌴','⚡','🌋','🌊','🏝'];
+const BG_LIST = [
+  'linear-gradient(135deg,#0c4a6e,#7c2d12)',
+  'linear-gradient(135deg,#164e63,#1e3a5f)',
+  'linear-gradient(135deg,#7c2d12,#0c4a6e)',
+  'linear-gradient(135deg,#065f46,#0c4a6e)',
+  'linear-gradient(135deg,#3b0764,#0c4a6e)',
+  'linear-gradient(135deg,#0f4c1a,#0c4a6e)',
+];
+const LV_LABELS = {beginner:'Débutant',intermediate:'Intermédiaire',advanced:'Avancé',expert:'Expert'};
+
+function getAllTrips() {
+  return [...STATIC_TRIPS, ...DB.getTrips()];
+}
+
+
+// ══════════════════════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════════════════════
+function updateNav() {
+  const user = DB.getSession();
+  const el = document.getElementById('navAuth');
+  const proposeBtn = document.getElementById('btnProposeNav');
+  if (user) {
+    const initials = user.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    el.innerHTML = `
+      <button class="btn btn-primary" onclick="openProposeModal()">+ Proposer un trip</button>
+      <div class="user-menu" id="userMenu">
+        <div class="user-btn" onclick="toggleDD()">
+          <div class="user-avatar-sm">${initials}</div>
+          <span class="user-name-sm">${user.name.split(' ')[0]}</span>
+          <span style="font-size:.65rem;color:var(--text-muted);margin-left:.2rem">▾</span>
+        </div>
+        <div class="user-dropdown" id="userDD">
+          <div class="dd-item">👤 ${user.name}</div>
+          <div class="dd-item">🏄 ${LV_LABELS[user.level]}</div>
+          <div class="dd-sep"></div>
+          <div class="dd-item" onclick="openProposeModal()">➕ Proposer un trip</div>
+          <div class="dd-sep"></div>
+          <div class="dd-item danger" onclick="logout()">🚪 Déconnexion</div>
+        </div>
+      </div>`;
+    if (proposeBtn) proposeBtn.style.display = 'none';
+  } else {
+    el.innerHTML = `
+      <button class="btn btn-ghost" onclick="openAuthModal('login')">Connexion</button>
+      <button class="btn btn-primary" onclick="openAuthModal('register')">S'inscrire</button>`;
+    if (proposeBtn) proposeBtn.style.display = 'none';
+  }
+}
+
+function toggleDD() {
+  document.getElementById('userDD').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#userMenu')) {
+    const dd = document.getElementById('userDD');
+    if (dd) dd.classList.remove('open');
+  }
+});
+
+function openAuthModal(tab='login') {
+  document.getElementById('authModal').classList.add('open');
+  switchAuthTab(tab);
+}
+function closeAuthModal() { document.getElementById('authModal').classList.remove('open'); }
+function switchAuthTab(tab) {
+  document.getElementById('loginForm').style.display   = tab==='login' ? 'block' : 'none';
+  document.getElementById('registerForm').style.display = tab==='register' ? 'block' : 'none';
+  document.getElementById('tab-login').classList.toggle('active', tab==='login');
+  document.getElementById('tab-register').classList.toggle('active', tab==='register');
+  document.getElementById('loginError').style.display = 'none';
+  document.getElementById('regError').style.display = 'none';
+}
+document.getElementById('authModal').addEventListener('click', e => { if(e.target.id==='authModal') closeAuthModal(); });
+
+function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pass  = document.getElementById('loginPass').value;
+  const users = DB.getUsers();
+  const user  = users.find(u => u.email===email && u.password===pass);
+  if (!user) { document.getElementById('loginError').style.display='block'; return; }
+  DB.saveSession(user);
+  closeAuthModal();
+  updateNav();
+  renderTrips();
+  showToast('🏄', `Bienvenue ${user.name.split(' ')[0]} !`);
+  if (_pendingJoinAfterLogin !== null) { setTimeout(()=>openJoinModal(_pendingJoinAfterLogin), 300); _pendingJoinAfterLogin=null; }
+  if (_pendingProposeAfterLogin) { setTimeout(openProposeModal, 300); _pendingProposeAfterLogin=false; }
+}
+
+function handleRegister(e) {
+  e.preventDefault();
+  const name  = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim().toLowerCase();
+  const pass  = document.getElementById('regPass').value;
+  const level = document.querySelector('input[name="reg-level"]:checked').value;
+  const boards= parseInt(document.getElementById('regBoards').value)||2;
+  const users = DB.getUsers();
+  if (users.find(u=>u.email===email)) { document.getElementById('regError').style.display='block'; return; }
+  const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const user = { id:'u'+Date.now(), name, email, password:pass, level, boards, initials };
+  users.push(user);
+  DB.saveUsers(users);
+  DB.saveSession(user);
+  closeAuthModal();
+  updateNav();
+  renderTrips();
+  showToast('🌊', `Profil créé ! Bienvenue ${name.split(' ')[0]} !`);
+  if (_pendingProposeAfterLogin) { setTimeout(openProposeModal, 300); _pendingProposeAfterLogin=false; }
+}
+
+function logout() {
+  DB.saveSession(null);
+  updateNav();
+  renderTrips();
+  showToast('👋', 'À bientôt sur DarjaSurf !');
+}
+
+// ══════════════════════════════════════════════════════
+//  PROPOSE TRIP
+// ══════════════════════════════════════════════════════
+let _pendingProposeAfterLogin = false;
+
+function openProposeModal() {
+  const user = DB.getSession();
+  if (!user) { _pendingProposeAfterLogin=true; openAuthModal('login'); return; }
+  // set min date today
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('pDateStart').min = today;
+  document.getElementById('pDateEnd').min   = today;
+  document.getElementById('proposeModal').classList.add('open');
+}
+function closeProposeModal() { document.getElementById('proposeModal').classList.remove('open'); }
+document.getElementById('proposeModal').addEventListener('click', e => { if(e.target.id==='proposeModal') closeProposeModal(); });
+
+function submitTrip(e) {
+  e.preventDefault();
+  const user = DB.getSession();
+  const from  = document.getElementById('pFrom').value.trim();
+  const to    = document.getElementById('pTo').value.trim();
+  const ds    = document.getElementById('pDateStart').value;
+  const de    = document.getElementById('pDateEnd').value;
+  const level = document.getElementById('pLevel').value;
+  const seats = parseInt(document.getElementById('pSeats').value)||3;
+  const boards= parseInt(document.getElementById('pBoards').value)||3;
+  const price    = parseInt(document.getElementById('pPrice').value)||0;
+  const currency = document.getElementById('pCurrency').value;
+  const desc     = document.getElementById('pDesc').value.trim();
+
+  const d1 = new Date(ds), d2 = new Date(de);
+  const days = Math.max(1, Math.round((d2-d1)/(1000*60*60*24)));
+  const fmtDate = d => d.toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'});
+  const initials = user.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+
+  const trip = {
+    id: 'u'+Date.now(),
+    emoji: EMOJI_LIST[Math.floor(Math.random()*EMOJI_LIST.length)],
+    bg: BG_LIST[Math.floor(Math.random()*BG_LIST.length)],
+    dates: `${fmtDate(d1)} – ${fmtDate(d2)}`,
+    from, to,
+    km: '— km', days: `${days} jour${days>1?'s':''}`,
+    seats, boards, lv: level, lvLabel: LV_LABELS[level],
+    av: initials, name: user.name, userId: user.id,
+    price, currency, desc, stops: [from, to],
+  };
+  const trips = DB.getTrips();
+  trips.unshift(trip);
+  DB.saveTrips(trips);
+  closeProposeModal();
+  document.getElementById('proposeForm').reset();
+  renderTrips();
+  showToast('🚀', `Votre trip "${from} → ${to}" est publié !`);
+}
+
+// ══════════════════════════════════════════════════════
+//  JOIN REQUEST
+// ══════════════════════════════════════════════════════
+let _currentJoinTripId = null;
+let _pendingJoinAfterLogin = null;
+
+function openJoinModal(tripId) {
+  const user = DB.getSession();
+  if (!user) { _pendingJoinAfterLogin = tripId; openAuthModal('login'); return; }
+  const trip = getAllTrips().find(t=>t.id===tripId);
+  if (!trip) return;
+  _currentJoinTripId = tripId;
+  document.getElementById('joinTripInfo').innerHTML = `
+    <div class="join-trip-emoji">${trip.emoji}</div>
+    <div>
+      <div class="join-trip-route">${trip.from} → ${trip.to}</div>
+      <div class="join-trip-meta">📅 ${trip.dates} · 🏄 Niveau ${trip.lvLabel} · ${formatPrice(trip.price, trip.currency)}/pers.</div>
+    </div>`;
+  // pre-fill boards from user profile
+  document.getElementById('joinBoards').value = Math.min(user.boards||1, trip.boards);
+  document.getElementById('joinMsg').value = '';
+  document.getElementById('joinModal').classList.add('open');
+}
+function closeJoinModal() { document.getElementById('joinModal').classList.remove('open'); _currentJoinTripId=null; }
+document.getElementById('joinModal').addEventListener('click', e => { if(e.target.id==='joinModal') closeJoinModal(); });
+
+function submitJoin(e) {
+  e.preventDefault();
+  const user = DB.getSession();
+  const msg    = document.getElementById('joinMsg').value.trim();
+  const boards = parseInt(document.getElementById('joinBoards').value)||1;
+  const reqs = DB.getRequests();
+  reqs.push({ id:'r'+Date.now(), tripId: _currentJoinTripId, userId: user.id, userName: user.name, msg, boards, status:'pending', date: new Date().toISOString() });
+  DB.saveRequests(reqs);
+  closeJoinModal();
+  renderTrips();
+  showToast('📬', 'Demande envoyée ! L\'organisateur vous contactera.');
+}
+
+function hasRequested(tripId) {
+  const user = DB.getSession();
+  if (!user) return false;
+  return DB.getRequests().some(r => r.tripId===tripId && r.userId===user.id);
+}
+
+function isMyTrip(trip) {
+  const user = DB.getSession();
+  if (!user) return false;
+  return trip.userId === user.id || trip.av === user.initials; // static trips won't match
+}
+
+// ══════════════════════════════════════════════════════
+//  TRIP RENDERING
+// ══════════════════════════════════════════════════════
+function renderTrips() {
+  const lvFilter    = document.getElementById('filterLevel').value;
+  const seatsFilter = document.getElementById('filterSeats').value;
+  const spotFilter  = document.getElementById('spotInput').value.toLowerCase().trim();
+
+  let trips = getAllTrips().filter(t => {
+    if (lvFilter    && t.lv !== lvFilter) return false;
+    if (seatsFilter && parseInt(seatsFilter) > t.seats) return false;
+    if (spotFilter  && !t.from.toLowerCase().includes(spotFilter) && !t.to.toLowerCase().includes(spotFilter)) return false;
+    return true;
+  });
+
+  document.getElementById('tripsCount').textContent = `${trips.length} trip${trips.length!==1?'s':''} disponible${trips.length!==1?'s':''}`;
+
+  if (!trips.length) {
+    document.getElementById('tripsGrid').innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--text-muted)">Aucun trip trouvé pour ces critères.</div>`;
+    return;
+  }
+
+  document.getElementById('tripsGrid').innerHTML = trips.map((trip, i) => {
+    let actionBtn = '';
+    if (isMyTrip(trip)) {
+      actionBtn = `<span class="btn-mine">Mon trip</span>`;
+    } else if (hasRequested(trip.id)) {
+      actionBtn = `<span class="btn-requested">✓ Demande envoyée</span>`;
+    } else {
+      actionBtn = `<button class="btn-join" onclick="event.stopPropagation();openJoinModal('${trip.id}')">Rejoindre</button>`;
+    }
+    return `
+    <div class="trip-card" onclick="openTripDetail('${trip.id}')">
+      <div class="trip-img" style="background:${trip.bg}">
+        <span style="z-index:1;filter:drop-shadow(0 4px 12px rgba(0,0,0,.4))">${trip.emoji}</span>
+        <span class="lvl-badge lv-${trip.lv}">${trip.lvLabel}</span>
+      </div>
+      <div class="trip-body">
+        <div class="trip-dates">📅 ${trip.dates}</div>
+        <div class="trip-route"><span>${trip.from}</span><span class="arr">→</span><span>${trip.to}</span></div>
+        <div class="trip-meta">
+          <span>📏 ${trip.km}</span><span>🗓 ${trip.days}</span>
+          <span>👤 ${trip.seats} place${trip.seats>1?'s':''}</span>
+          <span>🏄 ${trip.boards} boards max</span>
+        </div>
+        <div class="trip-ft">
+          <div class="host"><div class="avatar">${trip.av}</div><span class="host-name">${trip.name}</span></div>
+          <div style="display:flex;align-items:center;gap:.625rem">
+            <div class="price">${formatPrice(trip.price, trip.currency)} <small>/ pers.</small></div>
+            ${actionBtn}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════
+//  TRIP DETAIL MODAL + MAP
+// ══════════════════════════════════════════════════════
+let tripMap = null;
+
+// Custom Google-Maps–style pin icons
+function makePin(color) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="40" viewBox="0 0 28 40">
+    <filter id="s"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity=".35"/></filter>
+    <g filter="url(#s)">
+      <path d="M14 2C7.37 2 2 7.37 2 14c0 9.5 12 24 12 24S26 23.5 26 14C26 7.37 20.63 2 14 2z" fill="${color}" stroke="white" stroke-width="1.5"/>
+      <circle cx="14" cy="14" r="5" fill="white"/>
+    </g>
+  </svg>`;
+  return L.divIcon({ className:'', html:svg, iconSize:[28,40], iconAnchor:[14,40], tooltipAnchor:[0,-40] });
+}
+
+function openTripDetail(tripId) {
+  const trip = getAllTrips().find(t=>t.id===tripId);
+  if (!trip) return;
+
+  document.getElementById('td-emoji').textContent = trip.emoji;
+  document.getElementById('td-from').textContent  = trip.from;
+  document.getElementById('td-to').textContent    = trip.to;
+  document.getElementById('td-dates').textContent = '📅 ' + trip.dates;
+  const badge = document.getElementById('td-lvlbadge');
+  badge.textContent = trip.lvLabel; badge.className = 'lvl-badge lv-'+trip.lv;
+  document.getElementById('td-km').textContent    = trip.km;
+  document.getElementById('td-days').textContent  = trip.days;
+  document.getElementById('td-seats').textContent = trip.seats + ' place' + (trip.seats>1?'s':'');
+  document.getElementById('td-boards').textContent= trip.boards;
+  document.getElementById('td-desc').textContent  = trip.desc;
+  document.getElementById('td-av').textContent    = trip.av;
+  document.getElementById('td-hostname').textContent = trip.name;
+  document.getElementById('td-price').innerHTML   = formatPrice(trip.price, trip.currency) + ' <small>/ pers.</small>';
+  document.getElementById('td-stops').innerHTML   = trip.stops.map((s,i) =>
+    `<div class="td-stop"><div class="stop-dot ${i===trip.stops.length-1?'end':''}"></div><span>${s}</span></div>`
+  ).join('');
+
+  // Action button in detail modal
+  let actionHtml = '';
+  if (isMyTrip(trip)) {
+    actionHtml = `<span class="btn-mine">Mon trip</span>`;
+  } else if (hasRequested(trip.id)) {
+    actionHtml = `<span class="btn-requested">✓ Demande envoyée</span>`;
+  } else {
+    actionHtml = `<button class="btn btn-primary" onclick="closeDetailOpenJoin('${trip.id}')">Rejoindre ce trip</button>`;
+  }
+  document.getElementById('td-action-btn').innerHTML = actionHtml;
+
+  document.getElementById('tripModal').classList.add('open');
+
+  // Build map after DOM is visible
+  setTimeout(() => {
+    if (tripMap) { tripMap.remove(); tripMap = null; }
+
+    const fromC = CITY_COORDS[trip.from];
+    const toC   = CITY_COORDS[trip.to];
+
+    // Always center on Morocco
+    const mapEl = document.getElementById('tripMap');
+    const defaultCenter = [31.5, -7.5]; // Morocco center
+    tripMap = L.map('tripMap', {zoomControl:true, attributionControl:true});
+
+    // CartoDB Voyager — closest free tile to Google Maps style
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      maxZoom: 18,
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attributions">CARTO</a>'
+    }).addTo(tripMap);
+
+    if (fromC && toC) {
+      const startPin = makePin('#f97316');
+      const endPin   = makePin('#1d4ed8');
+
+      L.marker(fromC, {icon: startPin})
+        .bindTooltip(trip.from, {permanent:true, direction:'top', offset:[0,-2]})
+        .addTo(tripMap);
+
+      L.marker(toC, {icon: endPin})
+        .bindTooltip(trip.to, {permanent:true, direction:'top', offset:[0,-2]})
+        .addTo(tripMap);
+
+      // Google Maps–style route: white stroke + blue fill
+      L.polyline([fromC, toC], {color:'#ffffff', weight:7,  opacity:.85}).addTo(tripMap);
+      L.polyline([fromC, toC], {color:'#1d4ed8', weight:4.5, opacity:1 }).addTo(tripMap);
+
+      const bounds = L.latLngBounds([fromC, toC]);
+      tripMap.fitBounds(bounds, {padding:[40,40]});
+    } else {
+      tripMap.setView(defaultCenter, 5);
+    }
+  }, 60);
+}
+
+function closeTripModal() {
+  document.getElementById('tripModal').classList.remove('open');
+  if (tripMap) { tripMap.remove(); tripMap = null; }
+}
+function closeDetailOpenJoin(tripId) {
+  closeTripModal();
+  setTimeout(() => openJoinModal(tripId), 200);
+}
+document.getElementById('tripModal').addEventListener('click', e => { if(e.target.id==='tripModal') closeTripModal(); });
+
+// ══════════════════════════════════════════════════════
+//  AUTOCOMPLETE (search bar + propose form)
+// ══════════════════════════════════════════════════════
+function setupAC(inputId, listId, dataset, onSelect) {
+  const input = document.getElementById(inputId);
+  const list  = document.getElementById(listId);
+  input.addEventListener('input', function(){
+    const v = this.value.toLowerCase().trim();
+    list.innerHTML = '';
+    if (!v) { list.classList.remove('open'); return; }
+    const hits = dataset.filter(s=>s.name.toLowerCase().includes(v)||s.region.toLowerCase().includes(v)).slice(0,10);
+    if (!hits.length) { list.classList.remove('open'); return; }
+    hits.forEach(s=>{
+      const el = document.createElement('div');
+      el.className = 'ac-item';
+      const icon = s.type === 'Ville' ? '🏙' : (s.wave ? '🌊' : '📍');
+      const tag  = s.type || s.wave || '';
+      el.innerHTML = `<span>${icon}</span><div style="flex:1"><div style="font-weight:500">${s.name}</div><div style="font-size:.72rem;color:var(--text-muted)">${s.region}</div></div><span class="wave-tag">${tag}</span>`;
+      el.onclick = () => { input.value=s.name; list.classList.remove('open'); if(onSelect) onSelect(s.name); };
+      list.appendChild(el);
+    });
+    list.classList.add('open');
+  });
+}
+setupAC('spotInput', 'acList',  SPOTS,  ()=>renderTrips());
+setupAC('pFrom',     'acFrom',  PLACES);
+setupAC('pTo',       'acTo',    PLACES);
+document.addEventListener('click', e => {
+  ['acList','acFrom','acTo'].forEach(id => {
+    if (!e.target.closest(`#${id}`) && !e.target.closest(`[id]`)) {}
+    document.getElementById(id).classList.remove('open');
+  });
+});
+
+// ══════════════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════════════
+const CURRENCY_SYMBOLS = { EUR:'€', USD:'$', MAD:'MAD' };
+function formatPrice(price, currency) {
+  const sym = CURRENCY_SYMBOLS[currency] || '€';
+  if (sym === '€') return `${price} €`;
+  if (sym === '$') return `$${price}`;
+  return `${price.toLocaleString('fr-MA')} MAD`;
+}
+
+function chg(id, delta) {
+  const el = document.getElementById(id);
+  el.value = Math.max(parseInt(el.min)||0, Math.min(parseInt(el.max)||10, (parseInt(el.value)||0)+delta));
+}
+
+function onHeroCTA() {
+  const user = DB.getSession();
+  if (user) openProposeModal();
+  else openAuthModal('register');
+}
+
+let toastTimer;
+function showToast(icon, msg) {
+  const el = document.getElementById('toast');
+  document.getElementById('toastIcon').textContent = icon;
+  document.getElementById('toastMsg').textContent  = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 3500);
+}
+
+// ══════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════
+updateNav();
+renderTrips();
+</script>
+</body>
+</html>

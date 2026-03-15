@@ -208,6 +208,56 @@
     }
     .error-msg{color:#f87171;font-size:.78rem;margin-top:.3rem;display:none}
 
+    /* ── DATE PICKER ── */
+    input[type="date"]{color-scheme:dark}
+    input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.85) saturate(.4) brightness(1.4);cursor:pointer;opacity:.8;border-radius:3px}
+    input[type="date"]::-webkit-calendar-picker-indicator:hover{opacity:1;filter:invert(1)}
+
+    /* ── PROFILE MODAL ── */
+    .profile-modal{max-width:700px;padding:1.5rem}
+    .ph{display:flex;align-items:center;gap:1rem;margin-bottom:1.375rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border)}
+    .ph-av{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--primary));display:flex;align-items:center;justify-content:center;font-size:1.35rem;font-weight:700;color:#fff;flex-shrink:0;border:2px solid rgba(71,163,154,.35)}
+    .ph-info{flex:1;min-width:0}
+    .ph-name{font-weight:700;font-size:1.05rem;margin-bottom:.25rem}
+    .ph-meta{display:flex;gap:.75rem;font-size:.775rem;color:var(--text-muted);flex-wrap:wrap}
+    .ph-stats{display:flex;gap:1.25rem;text-align:center;flex-shrink:0}
+    .ph-stat{display:flex;flex-direction:column;gap:.1rem;align-items:center}
+    .ph-stat-n{font-family:'Cinzel',serif;font-size:1.2rem;font-weight:700;color:var(--teal-glow)}
+    .ph-stat-l{font-size:.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em}
+    .prof-sec-title{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin:1rem 0 .5rem;padding-bottom:.35rem;border-bottom:1px solid var(--border)}
+    /* trip row in profile */
+    .pt-card{background:var(--secondary);border:1px solid var(--border);border-radius:calc(var(--radius)*1.5);padding:.8rem 1rem;margin-bottom:.5rem;display:flex;align-items:center;gap:.875rem;transition:border-color .2s}
+    .pt-card:hover{border-color:rgba(71,163,154,.4)}
+    .pt-emoji{font-size:1.6rem;flex-shrink:0}
+    .pt-info{flex:1;min-width:0}
+    .pt-route{font-weight:600;font-size:.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .pt-dates{font-size:.7rem;color:var(--text-muted);margin-top:.15rem}
+    .pt-chips{display:flex;gap:.4rem;margin-top:.3rem;flex-wrap:wrap}
+    .pt-chip{font-size:.65rem;padding:.1rem .5rem;border-radius:999px;background:var(--muted);color:var(--text-muted);white-space:nowrap}
+    .pt-actions{display:flex;gap:.4rem;flex-shrink:0}
+    /* request cards */
+    .req-trip-lbl{font-size:.68rem;color:var(--text-muted);font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:.5rem}
+    .req-card{background:var(--secondary);border:1px solid var(--border);border-radius:calc(var(--radius)*1.5);padding:.8rem 1rem;margin-bottom:.5rem}
+    .req-hd{display:flex;align-items:center;gap:.625rem;margin-bottom:.4rem}
+    .req-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--primary));display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:#fff;flex-shrink:0}
+    .req-name{font-weight:600;font-size:.85rem}
+    .req-lv{font-size:.7rem;color:var(--text-muted)}
+    .req-msg{font-size:.78rem;color:var(--text-muted);background:var(--muted);border-radius:var(--radius);padding:.45rem .75rem;margin:.4rem 0 .5rem;font-style:italic;line-height:1.5}
+    .req-chips{display:flex;gap:.4rem;margin-bottom:.5rem}
+    .req-ft{display:flex;justify-content:flex-end;gap:.4rem}
+    .btn-accept{background:rgba(71,163,154,.12);color:var(--teal-glow);border:1px solid rgba(71,163,154,.35);padding:.35rem .875rem;border-radius:var(--radius);font-size:.775rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit}
+    .btn-accept:hover{background:var(--teal-glow);color:#fff;box-shadow:0 3px 12px rgba(71,163,154,.3)}
+    .btn-reject{background:rgba(232,96,74,.08);color:var(--coral);border:1px solid rgba(232,96,74,.3);padding:.35rem .875rem;border-radius:var(--radius);font-size:.775rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit}
+    .btn-reject:hover{background:var(--coral);color:#fff}
+    .status-pill{display:inline-flex;align-items:center;gap:.3rem;font-size:.72rem;font-weight:600;padding:.2rem .6rem;border-radius:999px}
+    .sp-pending{background:rgba(201,148,58,.12);color:var(--gold)}
+    .sp-accepted{background:rgba(71,163,154,.12);color:var(--teal-glow)}
+    .sp-rejected{background:rgba(232,96,74,.1);color:var(--coral)}
+    .badge-notif{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;border-radius:999px;background:var(--coral);color:#fff;font-size:.6rem;font-weight:700;padding:0 .3rem;margin-left:.3rem;vertical-align:middle}
+    .prof-empty{text-align:center;padding:2.5rem 1rem;color:var(--text-muted)}
+    .prof-empty-icon{font-size:2.2rem;margin-bottom:.5rem}
+    .prof-empty-txt{font-size:.82rem}
+
     /* ── TRIP DETAIL MODAL ── */
     .td-modal{background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius)*3);width:100%;max-width:860px;position:relative;animation:mi .28s ease;overflow:hidden;max-height:90vh;display:flex;flex-direction:column}
     .td-header{padding:1.5rem 1.75rem 1.25rem;border-bottom:1px solid var(--border);flex-shrink:0}
@@ -361,6 +411,20 @@
   </ul>
   <div class="nav-auth" id="navAuth"></div>
 </nav>
+
+<!-- PROFILE MODAL -->
+<div class="overlay" id="profileModal">
+  <div class="modal profile-modal">
+    <button class="modal-close" onclick="closeProfileModal()">✕</button>
+    <div class="ph" id="profileHeader"></div>
+    <div class="tabs" id="profileTabs">
+      <button class="tab active" id="ptab-mytrips"  onclick="switchProfileTab('mytrips')">Mes trips</button>
+      <button class="tab"        id="ptab-received" onclick="switchProfileTab('received')">Demandes reçues<span id="receivedBadge"></span></button>
+      <button class="tab"        id="ptab-sent"     onclick="switchProfileTab('sent')">Mes demandes</button>
+    </div>
+    <div id="profileContent"></div>
+  </div>
+</div>
 
 <!-- HERO -->
 <section class="hero">
@@ -915,8 +979,8 @@ function updateNav() {
           <span style="font-size:.65rem;color:var(--text-muted);margin-left:.2rem">▾</span>
         </div>
         <div class="user-dropdown" id="userDD">
-          <div class="dd-item">👤 ${user.name}</div>
-          <div class="dd-item">🏄 ${LV_LABELS[user.level]}</div>
+          <div class="dd-item" onclick="openProfileModal()">👤 Mon profil</div>
+          <div class="dd-item" style="pointer-events:none;opacity:.6;font-size:.75rem">🏄 ${LV_LABELS[user.level]} · 🛹 ${user.boards} board${user.boards>1?'s':''}</div>
           <div class="dd-sep"></div>
           <div class="dd-item" onclick="openProposeModal()">➕ Proposer un trip</div>
           <div class="dd-sep"></div>
@@ -1042,10 +1106,14 @@ function submitTrip(e) {
     emoji: EMOJI_LIST[Math.floor(Math.random()*EMOJI_LIST.length)],
     bg: BG_LIST[Math.floor(Math.random()*BG_LIST.length)],
     dates: `${fmtDate(d1)} – ${fmtDate(d2)}`,
+    startDate: ds, endDate: de,
     from, to,
     km: '— km', days: `${days} jour${days>1?'s':''}`,
-    seats, boards, lv: level, lvLabel: LV_LABELS[level],
-    av: initials, name: user.name, userId: user.id,
+    seats, seatsAvailable: seats,
+    boards, boardsMax: boards,
+    lv: level, level, lvLabel: LV_LABELS[level],
+    av: initials, name: user.name,
+    hostId: user.id, userId: user.id,
     price, currency, desc, stops: [from, to],
   };
   const trips = DB.getTrips();
@@ -1089,7 +1157,7 @@ function submitJoin(e) {
   const msg    = document.getElementById('joinMsg').value.trim();
   const boards = parseInt(document.getElementById('joinBoards').value)||1;
   const reqs = DB.getRequests();
-  reqs.push({ id:'r'+Date.now(), tripId: _currentJoinTripId, userId: user.id, userName: user.name, msg, boards, status:'pending', date: new Date().toISOString() });
+  reqs.push({ id:'r'+Date.now(), tripId: _currentJoinTripId, userId: user.id, userName: user.name, userLevel: user.level, message: msg, boards, status:'pending', createdAt: new Date().toISOString() });
   DB.saveRequests(reqs);
   closeJoinModal();
   renderTrips();
@@ -1337,6 +1405,253 @@ function showToast(icon, msg) {
 
 // ══════════════════════════════════════════════════════
 //  INIT
+// ══════════════════════════════════════════════════════
+// PROFILE
+// ══════════════════════════════════════════════════════
+function openProfileModal() {
+  const user = DB.getSession();
+  if (!user) { openAuthModal('login'); return; }
+  const dd = document.getElementById('userDD');
+  if (dd) dd.classList.remove('open');
+  _renderProfileHeader(user);
+  switchProfileTab('mytrips');
+  document.getElementById('profileModal').classList.add('open');
+  document.getElementById('profileModal').addEventListener('click', function h(e){
+    if (e.target.id === 'profileModal') { closeProfileModal(); this.removeEventListener('click', h); }
+  });
+}
+function closeProfileModal() { document.getElementById('profileModal').classList.remove('open'); }
+
+function _renderProfileHeader(user) {
+  const allTrips = getAllTrips();
+  const myTrips  = allTrips.filter(t => t.hostId === user.id);
+  const reqs     = DB.getRequests();
+  const sentCount= reqs.filter(r => r.userId === user.id).length;
+  const pendingReceivedCount = reqs.filter(r =>
+    myTrips.some(t => t.id === r.tripId) && r.status === 'pending'
+  ).length;
+
+  document.getElementById('profileHeader').innerHTML = `
+    <div class="ph-av">${user.initials||user.name.slice(0,2).toUpperCase()}</div>
+    <div class="ph-info">
+      <div class="ph-name">${user.name}</div>
+      <div class="ph-meta">
+        <span>🏄 ${LV_LABELS[user.level]||user.level}</span>
+        <span>🛹 ${user.boards} board${user.boards>1?'s':''}</span>
+        <span>✉️ ${user.email}</span>
+      </div>
+    </div>
+    <div class="ph-stats">
+      <div class="ph-stat"><span class="ph-stat-n">${myTrips.length}</span><span class="ph-stat-l">Trips</span></div>
+      <div class="ph-stat"><span class="ph-stat-n">${sentCount}</span><span class="ph-stat-l">Demandes</span></div>
+      <div class="ph-stat"><span class="ph-stat-n">${pendingReceivedCount}</span><span class="ph-stat-l">En attente</span></div>
+    </div>`;
+
+  // badge on received tab
+  const badge = document.getElementById('receivedBadge');
+  badge.innerHTML = pendingReceivedCount > 0
+    ? `<span class="badge-notif">${pendingReceivedCount}</span>` : '';
+}
+
+function switchProfileTab(tab) {
+  ['mytrips','received','sent'].forEach(t => {
+    document.getElementById('ptab-'+t).classList.toggle('active', t===tab);
+  });
+  const user = DB.getSession();
+  const el   = document.getElementById('profileContent');
+  if (tab === 'mytrips')  el.innerHTML = _buildMyTrips(user);
+  if (tab === 'received') el.innerHTML = _buildReceivedRequests(user);
+  if (tab === 'sent')     el.innerHTML = _buildSentRequests(user);
+}
+
+function _tripPastFuture(trips) {
+  const now = new Date(); now.setHours(0,0,0,0);
+  const future = trips.filter(t => new Date(t.endDate||t.dates?.split('→')[1]?.trim()||t.startDate) >= now);
+  const past   = trips.filter(t => new Date(t.endDate||t.dates?.split('→')[1]?.trim()||t.startDate) <  now);
+  return { future, past };
+}
+
+function _buildMyTrips(user) {
+  const all    = getAllTrips().filter(t => t.hostId === user.id);
+  const reqs   = DB.getRequests();
+  if (!all.length) return `<div class="prof-empty"><div class="prof-empty-icon">🌊</div><div class="prof-empty-txt">Tu n'as pas encore proposé de trip.<br><button class="btn btn-primary" style="margin-top:.75rem" onclick="closeProfileModal();openProposeModal()">+ Proposer un trip</button></div></div>`;
+
+  const { future, past } = _tripPastFuture(all);
+  let html = '';
+
+  const renderGroup = (label, list) => {
+    if (!list.length) return '';
+    let g = `<div class="prof-sec-title">${label}</div>`;
+    list.forEach(t => {
+      const pendingCount = reqs.filter(r => r.tripId === t.id && r.status === 'pending').length;
+      const acceptedCount= reqs.filter(r => r.tripId === t.id && r.status === 'accepted').length;
+      g += `<div class="pt-card">
+        <div class="pt-emoji">${t.emoji||'🏄'}</div>
+        <div class="pt-info">
+          <div class="pt-route">${t.from} → ${t.to}</div>
+          <div class="pt-dates">📅 ${t.startDate||t.dates||'—'}</div>
+          <div class="pt-chips">
+            <span class="pt-chip">💺 ${t.seatsAvailable??t.seats} place${(t.seatsAvailable??t.seats)>1?'s':''} dispo</span>
+            <span class="pt-chip">🛹 ${t.boardsMax||t.boards} boards max</span>
+            <span class="pt-chip lv-badge ${_lvClass(t.lv||t.level)}">${LV_LABELS[t.lv||t.level]||t.lv||t.level}</span>
+          </div>
+        </div>
+        <div class="pt-actions">
+          ${pendingCount ? `<button class="btn-accept" onclick="switchProfileTab('received')" style="position:relative">
+            📬 ${pendingCount} demande${pendingCount>1?'s':''}
+          </button>` : ''}
+          ${acceptedCount ? `<span class="status-pill sp-accepted">✓ ${acceptedCount} accepté${acceptedCount>1?'s':''}</span>` : ''}
+        </div>
+      </div>`;
+    });
+    return g;
+  };
+
+  html += renderGroup('🗓 Trips à venir', future);
+  html += renderGroup('📂 Trips passés',  past);
+  return html;
+}
+
+function _buildReceivedRequests(user) {
+  const myTrips = getAllTrips().filter(t => t.hostId === user.id);
+  if (!myTrips.length) return `<div class="prof-empty"><div class="prof-empty-icon">📬</div><div class="prof-empty-txt">Aucun trip proposé — les demandes apparaîtront ici.</div></div>`;
+
+  const reqs = DB.getRequests();
+  let html = '';
+  let hasAny = false;
+
+  myTrips.forEach(t => {
+    const tripReqs = reqs.filter(r => r.tripId === t.id);
+    if (!tripReqs.length) return;
+    hasAny = true;
+    html += `<div class="req-trip-lbl">🏄 ${t.from} → ${t.to} · ${t.startDate||t.dates||''}</div>`;
+    tripReqs.forEach(r => {
+      const initials = r.userName.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+      html += `<div class="req-card" id="req-${r.id}">
+        <div class="req-hd">
+          <div class="req-av">${initials}</div>
+          <div>
+            <div class="req-name">${r.userName}</div>
+            <div class="req-lv">🏄 ${LV_LABELS[r.userLevel]||r.userLevel} · 🛹 ${r.boards||'?'} board${(r.boards||1)>1?'s':''}</div>
+          </div>
+          <div style="margin-left:auto">
+            ${r.status==='pending'
+              ? '<span class="status-pill sp-pending">⏳ En attente</span>'
+              : r.status==='accepted'
+              ? '<span class="status-pill sp-accepted">✓ Accepté</span>'
+              : '<span class="status-pill sp-rejected">✗ Refusé</span>'}
+          </div>
+        </div>
+        ${r.message ? `<div class="req-msg">"${r.message}"</div>` : ''}
+        <div class="req-chips">
+          <span class="pt-chip">📅 ${r.createdAt ? new Date(r.createdAt).toLocaleDateString('fr-FR') : '—'}</span>
+        </div>
+        ${r.status==='pending' ? `
+        <div class="req-ft">
+          <button class="btn-reject"  onclick="rejectRequest('${r.id}','${t.id}')">✗ Refuser</button>
+          <button class="btn-accept"  onclick="acceptRequest('${r.id}','${t.id}')">✓ Accepter</button>
+        </div>` : ''}
+      </div>`;
+    });
+  });
+
+  if (!hasAny) return `<div class="prof-empty"><div class="prof-empty-icon">📬</div><div class="prof-empty-txt">Aucune demande reçue pour le moment.</div></div>`;
+  return html;
+}
+
+function _buildSentRequests(user) {
+  const reqs = DB.getRequests().filter(r => r.userId === user.id);
+  if (!reqs.length) return `<div class="prof-empty"><div class="prof-empty-icon">🌍</div><div class="prof-empty-txt">Tu n'as encore rejoint aucun trip.</div></div>`;
+
+  const allTrips = getAllTrips();
+  const now = new Date(); now.setHours(0,0,0,0);
+  let html = '';
+
+  const future = reqs.filter(r => {
+    const t = allTrips.find(t => t.id === r.tripId);
+    return t && new Date(t.endDate||t.startDate||t.dates?.split('→')[0]?.trim()||'2099') >= now;
+  });
+  const past = reqs.filter(r => {
+    const t = allTrips.find(t => t.id === r.tripId);
+    return !t || new Date(t.endDate||t.startDate||t.dates?.split('→')[0]?.trim()||'2099') < now;
+  });
+
+  const renderReqGroup = (label, list) => {
+    if (!list.length) return '';
+    let g = `<div class="prof-sec-title">${label}</div>`;
+    list.forEach(r => {
+      const t = allTrips.find(t => t.id === r.tripId);
+      if (!t) return;
+      g += `<div class="pt-card">
+        <div class="pt-emoji">${t.emoji||'🏄'}</div>
+        <div class="pt-info">
+          <div class="pt-route">${t.from} → ${t.to}</div>
+          <div class="pt-dates">📅 ${t.startDate||t.dates||'—'} · 👤 ${t.name||'Organisateur'}</div>
+          <div class="pt-chips">
+            <span class="pt-chip">${formatPrice(t.price,t.currency)} / pers.</span>
+          </div>
+        </div>
+        <div class="pt-actions">
+          ${r.status==='pending'
+            ? '<span class="status-pill sp-pending">⏳ En attente</span>'
+            : r.status==='accepted'
+            ? '<span class="status-pill sp-accepted">✓ Accepté</span>'
+            : '<span class="status-pill sp-rejected">✗ Refusé</span>'}
+        </div>
+      </div>`;
+    });
+    return g;
+  };
+
+  html += renderReqGroup('🗓 Trips à venir', future);
+  html += renderReqGroup('📂 Trips passés',  past);
+  return html;
+}
+
+function acceptRequest(reqId, tripId) {
+  const reqs  = DB.getRequests();
+  const trips = getAllTrips();
+  const req   = reqs.find(r => r.id === reqId);
+  if (!req || req.status !== 'pending') return;
+
+  // decrement seats
+  const dsTrips = DB.getTrips();
+  const trip = dsTrips.find(t => t.id === tripId);
+  if (trip) {
+    if ((trip.seatsAvailable ?? trip.seats) <= 0) {
+      showToast('⚠️', 'Plus de places disponibles sur ce trip.'); return;
+    }
+    trip.seatsAvailable = (trip.seatsAvailable ?? trip.seats) - 1;
+    DB.saveTrips(dsTrips);
+  }
+
+  req.status = 'accepted';
+  DB.saveRequests(reqs);
+  renderTrips();
+  const user = DB.getSession();
+  _renderProfileHeader(user);
+  // refresh current tab
+  document.getElementById('profileContent').innerHTML = _buildReceivedRequests(user);
+  showToast('✓', `${req.userName} a été accepté !`);
+}
+
+function rejectRequest(reqId, tripId) {
+  const reqs = DB.getRequests();
+  const req  = reqs.find(r => r.id === reqId);
+  if (!req || req.status !== 'pending') return;
+  req.status = 'rejected';
+  DB.saveRequests(reqs);
+  const user = DB.getSession();
+  _renderProfileHeader(user);
+  document.getElementById('profileContent').innerHTML = _buildReceivedRequests(user);
+  showToast('✗', `Demande de ${req.userName} refusée.`);
+}
+
+function _lvClass(lv) {
+  const m = {beginner:'lv-beginner',intermediate:'lv-intermediate',advanced:'lv-advanced',expert:'lv-expert'};
+  return m[lv]||'';
+}
+
 // ══════════════════════════════════════════════════════
 updateNav();
 renderTrips();

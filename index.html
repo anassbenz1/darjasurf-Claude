@@ -258,6 +258,19 @@
     .prof-empty-icon{font-size:2.2rem;margin-bottom:.5rem}
     .prof-empty-txt{font-size:.82rem}
 
+    /* ── CLICKABLE AVATARS ── */
+    .avatar-msg{cursor:pointer;transition:transform .18s,box-shadow .18s;position:relative}
+    .avatar-msg:hover{transform:scale(1.15);box-shadow:0 0 0 2px var(--teal-glow)}
+    .avatar-msg::after{content:'💬';position:absolute;bottom:-3px;right:-3px;font-size:.48rem;background:var(--teal-glow);border-radius:50%;width:13px;height:13px;display:flex;align-items:center;justify-content:center;line-height:13px;text-align:center}
+    /* Participants section in trip detail */
+    .td-participants-wrap{padding:.875rem 1.25rem;border-top:1px solid var(--border);display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+    .td-part-lbl{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);flex-basis:100%;margin-bottom:.25rem}
+    .part-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--primary));display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;color:#fff;cursor:pointer;transition:transform .18s,box-shadow .18s;position:relative;border:2px solid transparent;flex-shrink:0;title:attr(data-name)}
+    .part-av:hover{transform:scale(1.12);border-color:var(--teal-glow);box-shadow:0 0 10px rgba(71,163,154,.4)}
+    .part-av::after{content:'💬';position:absolute;bottom:-2px;right:-2px;font-size:.44rem;background:var(--teal-glow);border-radius:50%;width:12px;height:12px;line-height:12px;text-align:center}
+    .part-av-name{font-size:.72rem;color:var(--text-muted);max-width:52px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .part-slot{display:flex;flex-direction:column;align-items:center;gap:.2rem}
+
     /* ── MESSAGING PAGE ── */
     .msg-page{position:fixed;inset:0;z-index:400;background:var(--bg);display:none;flex-direction:column}
     .msg-page.open{display:flex}
@@ -628,6 +641,7 @@
       </div>
       <div class="td-right"><div id="tripMap"></div></div>
     </div>
+    <div id="td-participants-section"></div>
     <div class="td-footer">
       <div class="td-host">
         <div class="avatar" id="td-av"></div>
@@ -1253,10 +1267,24 @@ function hasRequested(tripId) {
   return DB.getRequests().some(r => r.tripId===tripId && r.userId===user.id);
 }
 
+function isAcceptedOn(tripId) {
+  const user = DB.getSession();
+  if (!user) return false;
+  return DB.getRequests().some(r => r.tripId===tripId && r.userId===user.id && r.status==='accepted');
+}
+
+function _startMsg(tripId, otherId, otherName) {
+  const user = DB.getSession();
+  if (!user) { openAuthModal('login'); return; }
+  closeTripModal && closeTripModal();
+  closeProfileModal && closeProfileModal();
+  openMsgPage(convKey(tripId, user.id, otherId));
+}
+
 function isMyTrip(trip) {
   const user = DB.getSession();
   if (!user) return false;
-  return trip.userId === user.id || trip.av === user.initials; // static trips won't match
+  return trip.hostId === user.id || trip.userId === user.id;
 }
 
 // ══════════════════════════════════════════════════════
@@ -1305,7 +1333,12 @@ function renderTrips() {
           <span>🏄 ${trip.boards} boards max</span>
         </div>
         <div class="trip-ft">
-          <div class="host"><div class="avatar">${trip.av}</div><span class="host-name">${trip.name}</span></div>
+          <div class="host">
+            <div class="avatar${isAcceptedOn(trip.id) ? ' avatar-msg' : ''}"
+              ${isAcceptedOn(trip.id) && trip.hostId ? `onclick="event.stopPropagation();_startMsg('${trip.id}','${trip.hostId}','${trip.name}')" title="Envoyer un message à ${trip.name}"` : ''}
+            >${trip.av}</div>
+            <span class="host-name">${trip.name}</span>
+          </div>
           <div style="display:flex;align-items:center;gap:.625rem">
             <div class="price">${formatPrice(trip.price, trip.currency)} <small>/ pers.</small></div>
             ${actionBtn}
@@ -1348,12 +1381,46 @@ function openTripDetail(tripId) {
   document.getElementById('td-seats').textContent = trip.seats + ' place' + (trip.seats>1?'s':'');
   document.getElementById('td-boards').textContent= trip.boards;
   document.getElementById('td-desc').textContent  = trip.desc;
-  document.getElementById('td-av').textContent    = trip.av;
+  // Host avatar — clickable for accepted participants
+  const tdAv = document.getElementById('td-av');
+  tdAv.textContent = trip.av;
+  const canMsgHost = isAcceptedOn(trip.id) && trip.hostId;
+  if (canMsgHost) {
+    tdAv.classList.add('avatar-msg');
+    tdAv.title = `Envoyer un message à ${trip.name}`;
+    tdAv.onclick = () => _startMsg(trip.id, trip.hostId, trip.name);
+  } else {
+    tdAv.classList.remove('avatar-msg');
+    tdAv.onclick = null;
+    tdAv.title = '';
+  }
   document.getElementById('td-hostname').textContent = trip.name;
   document.getElementById('td-price').innerHTML   = formatPrice(trip.price, trip.currency) + ' <small>/ pers.</small>';
   document.getElementById('td-stops').innerHTML   = trip.stops.map((s,i) =>
     `<div class="td-stop"><div class="stop-dot ${i===trip.stops.length-1?'end':''}"></div><span>${s}</span></div>`
   ).join('');
+
+  // Participants section (accepted requesters)
+  const user = DB.getSession();
+  const accepted = DB.getRequests().filter(r => r.tripId === trip.id && r.status === 'accepted');
+  let partHtml = '';
+  if (accepted.length) {
+    const iAmHost = user && (trip.hostId === user.id || trip.userId === user.id);
+    partHtml = `<div class="td-participants-wrap">
+      <div class="td-part-lbl">👥 Participants (${accepted.length})</div>
+      ${accepted.map(r => {
+        const ini = r.userName.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+        const canMsg = iAmHost && user;
+        return `<div class="part-slot">
+          <div class="part-av" ${canMsg ? `onclick="_startMsg('${trip.id}','${r.userId}','${r.userName}')" title="Message à ${r.userName}"` : ''}>
+            ${ini}
+          </div>
+          <div class="part-av-name">${r.userName.split(' ')[0]}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+  document.getElementById('td-participants-section').innerHTML = partHtml;
 
   // Action button in detail modal
   let actionHtml = '';

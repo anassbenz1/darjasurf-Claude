@@ -210,8 +210,8 @@
 
     /* ── DATE PICKER ── */
     input[type="date"]{color-scheme:dark}
-    input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.85) saturate(.4) brightness(1.4);cursor:pointer;opacity:.8;border-radius:3px}
-    input[type="date"]::-webkit-calendar-picker-indicator:hover{opacity:1;filter:invert(1)}
+    input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1) brightness(1.8);cursor:pointer;opacity:.75;border-radius:3px;padding:2px}
+    input[type="date"]::-webkit-calendar-picker-indicator:hover{opacity:1}
 
     /* ── PROFILE MODAL ── */
     .profile-modal{max-width:700px;padding:1.5rem}
@@ -257,6 +257,62 @@
     .prof-empty{text-align:center;padding:2.5rem 1rem;color:var(--text-muted)}
     .prof-empty-icon{font-size:2.2rem;margin-bottom:.5rem}
     .prof-empty-txt{font-size:.82rem}
+
+    /* ── MESSAGING PAGE ── */
+    .msg-page{position:fixed;inset:0;z-index:400;background:var(--bg);display:none;flex-direction:column}
+    .msg-page.open{display:flex}
+    .msg-topbar{display:flex;align-items:center;gap:1rem;padding:.875rem 1.25rem;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0}
+    .msg-back{background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:var(--radius);padding:.4rem .875rem;cursor:pointer;font-family:inherit;font-size:.82rem;transition:all .2s;display:flex;align-items:center;gap:.35rem}
+    .msg-back:hover{border-color:var(--primary);color:var(--text)}
+    .msg-title{font-family:'Cinzel',serif;font-size:1rem;font-weight:700;background:linear-gradient(to right,var(--teal-glow),var(--primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .msg-body{display:flex;flex:1;overflow:hidden}
+    /* sidebar */
+    .msg-sidebar{width:300px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+    .msg-sidebar-hd{padding:.875rem 1rem;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border)}
+    .msg-conv-list{overflow-y:auto;flex:1}
+    .msg-conv-item{padding:.875rem 1rem;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s;display:flex;align-items:center;gap:.75rem}
+    .msg-conv-item:hover{background:var(--secondary)}
+    .msg-conv-item.active{background:rgba(71,163,154,.1);border-left:2px solid var(--teal-glow)}
+    .conv-av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--primary));display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:#fff;flex-shrink:0}
+    .conv-info{flex:1;min-width:0}
+    .conv-name{font-weight:600;font-size:.875rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .conv-trip{font-size:.7rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .conv-last{font-size:.7rem;color:var(--text-muted);margin-top:.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .conv-unread{min-width:18px;height:18px;border-radius:999px;background:var(--teal-glow);color:#fff;font-size:.62rem;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 .3rem}
+    /* chat panel */
+    .msg-chat{flex:1;display:flex;flex-direction:column;overflow:hidden}
+    .msg-chat-hd{padding:.875rem 1.25rem;border-bottom:1px solid var(--border);background:var(--card);display:flex;align-items:center;gap:.75rem;flex-shrink:0}
+    .msg-chat-info{flex:1;min-width:0}
+    .msg-chat-name{font-weight:600;font-size:.925rem}
+    .msg-chat-trip{font-size:.72rem;color:var(--text-muted)}
+    .msg-messages{flex:1;overflow-y:auto;padding:1.25rem;display:flex;flex-direction:column;gap:.625rem}
+    .msg-day-sep{text-align:center;font-size:.68rem;color:var(--text-muted);margin:.375rem 0;position:relative}
+    .msg-day-sep::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:var(--border);z-index:-1}
+    .msg-day-sep span{background:var(--bg);padding:0 .75rem}
+    .msg-bubble-wrap{display:flex;align-items:flex-end;gap:.5rem}
+    .msg-bubble-wrap.me{flex-direction:row-reverse}
+    .msg-bav{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--primary));display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:#fff;flex-shrink:0}
+    .msg-bubble{max-width:68%;padding:.55rem .875rem;border-radius:1rem;font-size:.85rem;line-height:1.5;word-break:break-word}
+    .msg-bubble.them{background:var(--card);border:1px solid var(--border);border-bottom-left-radius:.25rem;color:var(--text)}
+    .msg-bubble.me{background:linear-gradient(135deg,var(--accent),var(--teal-glow));color:#fff;border-bottom-right-radius:.25rem}
+    .msg-bubble-time{font-size:.6rem;color:var(--text-muted);margin-top:.2rem;text-align:right}
+    .msg-bubble-wrap.me .msg-bubble-time{text-align:left}
+    .msg-empty-chat{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-muted);gap:.625rem}
+    .msg-no-conv{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-muted);gap:.625rem;padding:2rem}
+    .msg-input-area{padding:.875rem 1.25rem;border-top:1px solid var(--border);background:var(--card);display:flex;gap:.625rem;align-items:flex-end;flex-shrink:0}
+    .msg-input{flex:1;background:var(--secondary);border:1px solid var(--border);border-radius:calc(var(--radius)*2);padding:.625rem 1rem;color:var(--text);font-family:inherit;font-size:.875rem;outline:none;resize:none;max-height:120px;line-height:1.5;transition:border-color .2s}
+    .msg-input:focus{border-color:var(--teal-glow)}
+    .msg-send-btn{width:38px;height:38px;border-radius:50%;background:var(--teal-glow);border:none;color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+    .msg-send-btn:hover{transform:scale(1.08);background:var(--accent)}
+    .msg-no-select{flex:1;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:.875rem;flex-direction:column;gap:.5rem}
+    /* mobile sidebar toggle */
+    @media(max-width:640px){
+      .msg-sidebar{position:absolute;left:0;top:0;bottom:0;z-index:10;transform:translateX(-100%);transition:transform .25s;background:var(--bg);width:100%}
+      .msg-sidebar.mob-open{transform:translateX(0)}
+      .msg-chat{width:100%}
+      .msg-back-conv{display:flex!important}
+    }
+    .msg-back-conv{display:none;background:none;border:none;color:var(--teal-glow);font-size:.85rem;cursor:pointer;font-family:inherit;padding:0;align-items:center;gap:.3rem}
 
     /* ── TRIP DETAIL MODAL ── */
     .td-modal{background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius)*3);width:100%;max-width:860px;position:relative;animation:mi .28s ease;overflow:hidden;max-height:90vh;display:flex;flex-direction:column}
@@ -323,17 +379,19 @@
     @media(max-width:480px){
       /* Nav */
       nav{padding:.75rem 1rem}
-      .logo-text{font-size:1.05rem}
-      .nav-auth{gap:.4rem}
+      .logo-text{display:none}
+      .nav-auth{gap:.4rem;flex:1;justify-content:flex-end}
       .btn{padding:.45rem .875rem;font-size:.8rem}
       .btn-lg{padding:.75rem 1.25rem;font-size:.9rem}
       .user-name-sm{display:none}
+      /* Propose button: plus compact et visible sur mobile */
+      #navAuth .btn-primary:first-child{font-size:.78rem;padding:.45rem .75rem;white-space:nowrap}
 
       /* Hero */
       .hero-content{padding:5.5rem 1rem 2rem}
       .hero-badge{font-size:.7rem;padding:.22rem .75rem;margin-bottom:.625rem}
       .hero-title{font-size:clamp(1.5rem,8vw,2.25rem);margin-bottom:.6rem}
-      .hero-sub{font-size:.875rem;max-width:100%;margin-bottom:1rem}
+      .hero-sub{display:none}
       .hero-cta{gap:.5rem}
       .hero-stats{gap:1.25rem;margin-top:1.25rem}
       .stat-n{font-size:1.2rem}
@@ -411,6 +469,27 @@
   </ul>
   <div class="nav-auth" id="navAuth"></div>
 </nav>
+
+<!-- MESSAGING PAGE -->
+<div id="msgPage" class="msg-page">
+  <div class="msg-topbar">
+    <button class="msg-back" onclick="closeMsgPage()">← Retour</button>
+    <span class="msg-title">💬 DarjaSurf Messages</span>
+    <div style="margin-left:auto;font-size:.78rem;color:var(--text-muted)" id="msgBadgeTop"></div>
+  </div>
+  <div class="msg-body">
+    <div class="msg-sidebar" id="msgSidebar">
+      <div class="msg-sidebar-hd">Conversations</div>
+      <div class="msg-conv-list" id="msgConvList"></div>
+    </div>
+    <div class="msg-chat" id="msgChatPanel">
+      <div class="msg-no-select" id="msgNoSelect">
+        <span style="font-size:2rem">💬</span>
+        <span>Sélectionne une conversation</span>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- PROFILE MODAL -->
 <div class="overlay" id="profileModal">
@@ -755,10 +834,12 @@ const DB = {
   getSession:  () => JSON.parse(localStorage.getItem('ds_session')  || 'null'),
   getTrips:    () => JSON.parse(localStorage.getItem('ds_trips')    || '[]'),
   getRequests: () => JSON.parse(localStorage.getItem('ds_requests') || '[]'),
+  getMessages: () => JSON.parse(localStorage.getItem('ds_messages') || '[]'),
   saveUsers:    u => localStorage.setItem('ds_users',    JSON.stringify(u)),
   saveSession:  s => localStorage.setItem('ds_session',  JSON.stringify(s)),
   saveTrips:    t => localStorage.setItem('ds_trips',    JSON.stringify(t)),
   saveRequests: r => localStorage.setItem('ds_requests', JSON.stringify(r)),
+  saveMessages: m => localStorage.setItem('ds_messages', JSON.stringify(m)),
 };
 
 // ══════════════════════════════════════════════════════
@@ -980,6 +1061,7 @@ function updateNav() {
         </div>
         <div class="user-dropdown" id="userDD">
           <div class="dd-item" onclick="openProfileModal()">👤 Mon profil</div>
+          <div class="dd-item" onclick="openMsgPage()" id="ddMsgItem">💬 Messages<span id="ddMsgBadge"></span></div>
           <div class="dd-item" style="pointer-events:none;opacity:.6;font-size:.75rem">🏄 ${LV_LABELS[user.level]} · 🛹 ${user.boards} board${user.boards>1?'s':''}</div>
           <div class="dd-sep"></div>
           <div class="dd-item" onclick="openProposeModal()">➕ Proposer un trip</div>
@@ -1032,6 +1114,7 @@ function handleLogin(e) {
   closeAuthModal();
   updateNav();
   renderTrips();
+  _updateMsgBadge();
   showToast('🏄', `Bienvenue ${user.name.split(' ')[0]} !`);
   if (_pendingJoinAfterLogin !== null) { setTimeout(()=>openJoinModal(_pendingJoinAfterLogin), 300); _pendingJoinAfterLogin=null; }
   if (_pendingProposeAfterLogin) { setTimeout(openProposeModal, 300); _pendingProposeAfterLogin=false; }
@@ -1546,11 +1629,14 @@ function _buildReceivedRequests(user) {
         <div class="req-chips">
           <span class="pt-chip">📅 ${r.createdAt ? new Date(r.createdAt).toLocaleDateString('fr-FR') : '—'}</span>
         </div>
-        ${r.status==='pending' ? `
         <div class="req-ft">
-          <button class="btn-reject"  onclick="rejectRequest('${r.id}','${t.id}')">✗ Refuser</button>
-          <button class="btn-accept"  onclick="acceptRequest('${r.id}','${t.id}')">✓ Accepter</button>
-        </div>` : ''}
+          ${r.status==='pending' ? `
+            <button class="btn-reject" onclick="rejectRequest('${r.id}','${t.id}')">✗ Refuser</button>
+            <button class="btn-accept" onclick="acceptRequest('${r.id}','${t.id}')">✓ Accepter</button>
+          ` : r.status==='accepted' ? `
+            <button class="btn-accept" style="background:rgba(71,163,154,.08)" onclick="closeProfileModal();openMsgPage(convKey('${t.id}','${user.id}','${r.userId}'))">💬 Envoyer un message</button>
+          ` : ''}
+        </div>
       </div>`;
     });
   });
@@ -1595,7 +1681,8 @@ function _buildSentRequests(user) {
           ${r.status==='pending'
             ? '<span class="status-pill sp-pending">⏳ En attente</span>'
             : r.status==='accepted'
-            ? '<span class="status-pill sp-accepted">✓ Accepté</span>'
+            ? `<span class="status-pill sp-accepted">✓ Accepté</span>
+               <button class="btn-accept" style="background:rgba(71,163,154,.08);margin-left:.4rem" onclick="closeProfileModal();openMsgPage(convKey('${t.id}','${user.id}','${r.hostId||t.hostId}'))">💬 Message</button>`
             : '<span class="status-pill sp-rejected">✗ Refusé</span>'}
         </div>
       </div>`;
@@ -1650,6 +1737,200 @@ function rejectRequest(reqId, tripId) {
 function _lvClass(lv) {
   const m = {beginner:'lv-beginner',intermediate:'lv-intermediate',advanced:'lv-advanced',expert:'lv-expert'};
   return m[lv]||'';
+}
+
+// ══════════════════════════════════════════════════════
+//  MESSAGING
+// ══════════════════════════════════════════════════════
+function convKey(tripId, uid1, uid2) {
+  // stable key: tripId + sorted user ids
+  return [tripId, [uid1, uid2].sort().join('_')].join('__');
+}
+
+function _getAuthorizedConvs(user) {
+  // Returns [{key, tripId, otherId, otherName, trip}]
+  const reqs   = DB.getRequests();
+  const trips  = getAllTrips();
+  const result = [];
+  const seen   = new Set();
+
+  reqs.forEach(r => {
+    if (r.status !== 'accepted') return;
+    const trip = trips.find(t => t.id === r.tripId);
+    if (!trip) return;
+
+    let otherId, otherName;
+    const iAmHost     = trip.hostId === user.id;
+    const iAmRequester = r.userId === user.id;
+
+    if (iAmHost) { otherId = r.userId; otherName = r.userName; }
+    else if (iAmRequester) { otherId = trip.hostId; otherName = trip.name || 'Organisateur'; }
+    else return;
+
+    const key = convKey(trip.id, user.id, otherId);
+    if (seen.has(key)) return;
+    seen.add(key);
+    result.push({ key, tripId: trip.id, otherId, otherName, trip });
+  });
+  return result;
+}
+
+function _unreadCount(user) {
+  const convs = _getAuthorizedConvs(user);
+  const msgs  = DB.getMessages();
+  let count = 0;
+  convs.forEach(c => {
+    const lastRead = parseInt(localStorage.getItem('ds_read_' + c.key) || '0');
+    const unread   = msgs.filter(m => m.convKey === c.key && m.senderId !== user.id && m.ts > lastRead);
+    count += unread.length;
+  });
+  return count;
+}
+
+let _currentConvKey = null;
+
+function openMsgPage(targetConvKey) {
+  const user = DB.getSession();
+  if (!user) { openAuthModal('login'); return; }
+  const dd = document.getElementById('userDD');
+  if (dd) dd.classList.remove('open');
+  document.getElementById('msgPage').classList.add('open');
+  _renderConvList(user, targetConvKey);
+  if (targetConvKey) _openConversation(targetConvKey, user);
+  _updateMsgBadge();
+}
+
+function closeMsgPage() {
+  document.getElementById('msgPage').classList.remove('open');
+  _currentConvKey = null;
+}
+
+function _renderConvList(user, activeKey) {
+  const convs = _getAuthorizedConvs(user);
+  const msgs  = DB.getMessages();
+  const el    = document.getElementById('msgConvList');
+
+  if (!convs.length) {
+    el.innerHTML = `<div style="padding:1.5rem 1rem;font-size:.82rem;color:var(--text-muted);text-align:center">Aucune conversation.<br>Accepte des demandes pour échanger.</div>`;
+    return;
+  }
+
+  el.innerHTML = convs.map(c => {
+    const convMsgs  = msgs.filter(m => m.convKey === c.key).sort((a,b) => a.ts - b.ts);
+    const lastMsg   = convMsgs[convMsgs.length - 1];
+    const lastRead  = parseInt(localStorage.getItem('ds_read_' + c.key) || '0');
+    const unread    = convMsgs.filter(m => m.senderId !== user.id && m.ts > lastRead).length;
+    const initials  = c.otherName.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    const isActive  = c.key === (activeKey || _currentConvKey);
+    return `<div class="msg-conv-item${isActive?' active':''}" onclick="_openConversation('${c.key}',null)">
+      <div class="conv-av">${initials}</div>
+      <div class="conv-info">
+        <div class="conv-name">${c.otherName}</div>
+        <div class="conv-trip">🏄 ${c.trip.from} → ${c.trip.to}</div>
+        <div class="conv-last">${lastMsg ? (lastMsg.senderId===user.id?'Vous : ':'')+lastMsg.text.slice(0,40)+(lastMsg.text.length>40?'…':'') : 'Démarrer la conversation'}</div>
+      </div>
+      ${unread ? `<div class="conv-unread">${unread}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function _openConversation(key, userArg) {
+  const user  = userArg || DB.getSession();
+  _currentConvKey = key;
+
+  // mark as read
+  localStorage.setItem('ds_read_' + key, Date.now().toString());
+  _updateMsgBadge();
+
+  const convs = _getAuthorizedConvs(user);
+  const conv  = convs.find(c => c.key === key);
+  if (!conv) return;
+
+  // on mobile, hide sidebar
+  const sidebar = document.getElementById('msgSidebar');
+  sidebar.classList.remove('mob-open');
+
+  // refresh conv list (to clear unread badge)
+  _renderConvList(user, key);
+
+  const msgs   = DB.getMessages().filter(m => m.convKey === key).sort((a,b) => a.ts - b.ts);
+  const initials = conv.otherName.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const myInit   = user.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+
+  let bubblesHtml = '';
+  let lastDay = '';
+  msgs.forEach(m => {
+    const d   = new Date(m.ts);
+    const day = d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
+    if (day !== lastDay) {
+      bubblesHtml += `<div class="msg-day-sep"><span>${day}</span></div>`;
+      lastDay = day;
+    }
+    const isMe = m.senderId === user.id;
+    const av   = isMe ? myInit : initials;
+    const time = d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    bubblesHtml += `<div class="msg-bubble-wrap ${isMe?'me':''}">
+      <div class="msg-bav">${av}</div>
+      <div>
+        <div class="msg-bubble ${isMe?'me':'them'}">${m.text.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>
+        <div class="msg-bubble-time">${time}</div>
+      </div>
+    </div>`;
+  });
+
+  if (!bubblesHtml) bubblesHtml = `<div class="msg-empty-chat"><span style="font-size:1.75rem">👋</span><span style="font-size:.85rem;color:var(--text-muted)">Dis bonjour à ${conv.otherName} !</span></div>`;
+
+  document.getElementById('msgChatPanel').innerHTML = `
+    <div class="msg-chat-hd">
+      <button class="msg-back-conv" onclick="document.getElementById('msgSidebar').classList.add('mob-open')">← Retour</button>
+      <div class="conv-av">${initials}</div>
+      <div class="msg-chat-info">
+        <div class="msg-chat-name">${conv.otherName}</div>
+        <div class="msg-chat-trip">🏄 ${conv.trip.from} → ${conv.trip.to} · ${conv.trip.startDate||conv.trip.dates||''}</div>
+      </div>
+    </div>
+    <div class="msg-messages" id="msgMessages">${bubblesHtml}</div>
+    <div class="msg-input-area">
+      <textarea class="msg-input" id="msgInput" placeholder="Écris un message…" rows="1"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();_sendMsg('${key}')}"
+        oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+      <button class="msg-send-btn" onclick="_sendMsg('${key}')">➤</button>
+    </div>`;
+
+  // scroll to bottom
+  setTimeout(() => {
+    const el = document.getElementById('msgMessages');
+    if (el) el.scrollTop = el.scrollHeight;
+  }, 50);
+}
+
+function _sendMsg(key) {
+  const user  = DB.getSession();
+  const input = document.getElementById('msgInput');
+  const text  = input ? input.value.trim() : '';
+  if (!text) return;
+
+  const msgs = DB.getMessages();
+  msgs.push({ id:'m'+Date.now(), convKey: key, senderId: user.id, senderName: user.name, text, ts: Date.now() });
+  DB.saveMessages(msgs);
+
+  // mark as read immediately (sender)
+  localStorage.setItem('ds_read_' + key, Date.now().toString());
+
+  input.value = '';
+  input.style.height = 'auto';
+  _openConversation(key, user);
+  _updateMsgBadge();
+}
+
+function _updateMsgBadge() {
+  const user = DB.getSession();
+  if (!user) return;
+  const count = _unreadCount(user);
+  const badge = document.getElementById('ddMsgBadge');
+  if (badge) badge.innerHTML = count > 0 ? ` <span class="badge-notif">${count}</span>` : '';
+  const top = document.getElementById('msgBadgeTop');
+  if (top) top.textContent = count > 0 ? `${count} non lu${count>1?'s':''}` : '';
 }
 
 // ══════════════════════════════════════════════════════

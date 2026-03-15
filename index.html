@@ -210,6 +210,7 @@
 
     ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
+    /* ── Tablet ── */
     @media(max-width:768px){
       .nav-links{display:none}
       .footer-top{grid-template-columns:1fr 1fr}
@@ -219,6 +220,82 @@
       .td-right{border-left:none;border-top:1px solid var(--border)}
       #tripMap{min-height:220px}
       .fg-row{grid-template-columns:1fr}
+    }
+
+    /* ── Mobile (≤ 480px) — iPhone 14/15/16, Galaxy S23-S25 ── */
+    @media(max-width:480px){
+      /* Nav */
+      nav{padding:.75rem 1rem}
+      .logo-text{font-size:1.05rem}
+      .nav-auth{gap:.4rem}
+      .btn{padding:.45rem .875rem;font-size:.8rem}
+      .btn-lg{padding:.75rem 1.25rem;font-size:.9rem}
+      .user-name-sm{display:none}
+
+      /* Hero */
+      .hero-content{padding:5.5rem 1rem 2rem}
+      .hero-badge{font-size:.7rem;padding:.22rem .75rem;margin-bottom:.625rem}
+      .hero-title{font-size:clamp(1.5rem,8vw,2.25rem);margin-bottom:.6rem}
+      .hero-sub{font-size:.875rem;max-width:100%;margin-bottom:1rem}
+      .hero-cta{gap:.5rem}
+      .hero-stats{gap:1.25rem;margin-top:1.25rem}
+      .stat-n{font-size:1.2rem}
+      .stat-l{font-size:.65rem}
+
+      /* Search bar */
+      .search-bar{padding:1.25rem 1rem}
+      .search-row{flex-direction:column;gap:.625rem}
+      .sf{min-width:0!important;flex:none!important;width:100%}
+      .sf input,.sf select{font-size:.875rem}
+      .search-row .btn{width:100%;justify-content:center}
+
+      /* Sections */
+      .section{padding:2.5rem 1rem}
+      .s-title{font-size:1.35rem;margin-bottom:1.75rem}
+      .how-grid{grid-template-columns:1fr;gap:1rem}
+      .how-card{padding:1.25rem}
+
+      /* Trips */
+      .trips-hd{flex-direction:column;align-items:flex-start;gap:.75rem;margin-bottom:1.5rem}
+      .trips-grid{grid-template-columns:1fr;gap:1rem}
+      .trip-img{height:155px}
+      .trip-body{padding:.875rem}
+      .trip-route{font-size:.9rem}
+      .trip-meta{gap:.625rem;font-size:.72rem}
+      .trip-ft{flex-wrap:wrap;gap:.5rem}
+      .price{font-size:.95rem}
+
+      /* Trip detail modal */
+      .td-modal{border-radius:calc(var(--radius)*2);max-height:95vh}
+      .td-header{padding:1rem}
+      .td-route{font-size:1.1rem;flex-wrap:wrap}
+      .td-meta-row{font-size:.72rem;gap:.625rem}
+      .td-left{padding:1rem}
+      .td-footer{padding:1rem;flex-wrap:wrap;gap:.75rem}
+      .td-footer > div:last-child{width:100%;justify-content:space-between}
+      #tripMap{min-height:200px}
+
+      /* Auth modal */
+      .modal{padding:1.25rem;border-radius:calc(var(--radius)*2)}
+      .lv-grid{grid-template-columns:1fr 1fr}
+      .lv-opt{padding:.5rem}
+      .lv-emoji{font-size:1.2rem}
+
+      /* Propose modal */
+      .propose-modal{padding:1.25rem;border-radius:calc(var(--radius)*2)}
+      .fg-row{grid-template-columns:1fr!important}
+      .boards-row{gap:.4rem}
+      .boards-btn{width:30px;height:30px;font-size:1rem}
+
+      /* Join modal */
+      .join-trip-info{padding:.75rem}
+      .join-trip-emoji{font-size:1.5rem}
+
+      /* Footer */
+      footer{padding:2rem 1rem 1.25rem}
+      .footer-top{grid-template-columns:1fr;gap:1.5rem}
+      .footer-bot{flex-direction:column;gap:.5rem;text-align:center}
+      .footer-brand p{max-width:100%}
     }
   </style>
 </head>
@@ -274,7 +351,7 @@
         <input type="text" id="spotInput" placeholder="Spot ou ville (ex: Taghazout…)" autocomplete="off">
         <div class="ac-list" id="acList"></div>
       </div>
-      <div class="sf" style="flex:0 1 155px;min-width:155px">
+      <div class="sf" style="flex:0 1 155px;min-width:140px">
         <span class="si">🎚</span>
         <select id="filterLevel" style="padding-left:2.5rem" onchange="renderTrips()">
           <option value="">Tous niveaux</option>
@@ -284,7 +361,7 @@
           <option value="expert">Expert</option>
         </select>
       </div>
-      <div class="sf" style="flex:0 1 155px;min-width:155px">
+      <div class="sf" style="flex:0 1 155px;min-width:140px">
         <span class="si">👤</span>
         <select id="filterSeats" style="padding-left:2.5rem" onchange="renderTrips()">
           <option value="">Places dispo</option>

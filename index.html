@@ -918,9 +918,8 @@
     <div class="mytrips-page-hd">
       <div>
         <p class="s-label">Mes voyages</p>
-        <h2 style="font-family:'Cinzel',serif;font-size:1.5rem;font-weight:700;margin:0">Vos trajets proposés</h2>
+        <h2 style="font-family:'Cinzel',serif;font-size:1.5rem;font-weight:700;margin:0">Vos trajets</h2>
       </div>
-      <button class="btn btn-primary" onclick="closeMyTripsPage();openProposeModal()">+ Proposer un trip</button>
     </div>
     <div id="myTripsPageContent"></div>
   </div>
@@ -1995,22 +1994,29 @@ function openMyTripsPage() {
   document.getElementById('msgPage').classList.remove('open');
   document.getElementById('fullMapOverlay').classList.remove('open');
 
-  const allTrips = getAllTrips().filter(t => t.hostId === user.id);
-  const today    = new Date().toISOString().split('T')[0];
-  const upcoming = allTrips.filter(t => (t.startDate||'') >= today);
-  const past     = allTrips.filter(t => (t.startDate||'') < today);
-  const reqs     = DB.getRequests();
+  const reqs      = DB.getRequests();
+  const allTrips  = getAllTrips();
+  const today     = new Date().toISOString().split('T')[0];
 
-  function buildTripCard(trip) {
+  // Trips I proposed
+  const myProposed = allTrips.filter(t => t.hostId === user.id);
+  // Trips I joined (accepted request, not my own)
+  const acceptedTripIds = reqs
+    .filter(r => r.userId === user.id && r.status === 'accepted')
+    .map(r => r.tripId);
+  const myJoined = allTrips.filter(t => acceptedTripIds.includes(t.id) && t.hostId !== user.id);
+
+  function buildTripCard(trip, isOwn) {
     const lvLabel      = (LV_LABELS_ALL[currentLang]||LV_LABELS_ALL.fr)[trip.lv] || trip.lv;
-    const pendingCount = reqs.filter(r => r.tripId === trip.id && r.status === 'pending').length;
-    const acceptedCount= reqs.filter(r => r.tripId === trip.id && r.status === 'accepted').length;
-    const av = trip.photo
-      ? `<img src="${trip.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
-      : (trip.av || user.name.slice(0,2).toUpperCase());
-    const badge = pendingCount
+    const pendingCount = isOwn ? reqs.filter(r => r.tripId === trip.id && r.status === 'pending').length : 0;
+    const acceptedCount= isOwn ? reqs.filter(r => r.tripId === trip.id && r.status === 'accepted').length : 0;
+    const badge = isOwn && pendingCount
       ? `<span class="mytrips-badge pending">📬 ${pendingCount} en attente</span>`
-      : (acceptedCount ? `<span class="mytrips-badge accepted">✓ ${acceptedCount} participant${acceptedCount>1?'s':''}</span>` : '');
+      : (isOwn && acceptedCount ? `<span class="mytrips-badge accepted">✓ ${acceptedCount} participant${acceptedCount>1?'s':''}</span>` : '');
+    const statusPill = isOwn
+      ? `<span class="btn-mine">Mon trip</span>`
+      : `<span class="btn-requested" style="background:rgba(71,163,154,.15);border-color:var(--teal-glow);color:var(--teal-glow)">✓ Rejoint</span>`;
+    const av = trip.av || trip.name?.slice(0,2).toUpperCase() || '??';
     return `
     <div class="trip-card-wrap">
       ${badge}
@@ -2029,11 +2035,11 @@ function openMyTripsPage() {
           <div class="trip-ft">
             <div class="host">
               <div class="avatar">${av}</div>
-              <span class="host-name">${trip.name||user.name}</span>
+              <span class="host-name">${trip.name||'—'}</span>
             </div>
             <div style="display:flex;align-items:center;gap:.625rem">
               <div class="price">${formatPrice(trip.price,trip.currency)} <small>/ pers.</small></div>
-              <span class="btn-mine">Mon trip</span>
+              ${statusPill}
             </div>
           </div>
         </div>
@@ -2041,19 +2047,23 @@ function openMyTripsPage() {
     </div>`;
   }
 
-  function buildSection(label, trips) {
+  function buildSection(label, trips, isOwn) {
     if (!trips.length) return '';
-    return `<div class="mytrips-sec-title">${label}</div>
-      <div class="trips-grid">${trips.map(buildTripCard).join('')}</div>`;
+    const upcoming = trips.filter(t => (t.startDate||'') >= today);
+    const past     = trips.filter(t => (t.startDate||'') < today);
+    let html = `<div class="mytrips-sec-title">${label}</div>`;
+    if (upcoming.length) html += `<div class="trips-grid">${upcoming.map(t=>buildTripCard(t,isOwn)).join('')}</div>`;
+    if (past.length) html += `<div class="mytrips-sec-title" style="color:var(--text-muted)">📂 Passés</div><div class="trips-grid">${past.map(t=>buildTripCard(t,isOwn)).join('')}</div>`;
+    return html;
   }
 
-  const content = allTrips.length
-    ? buildSection(`🗓 Trajets à venir (${upcoming.length})`, upcoming)
-      + buildSection(`📂 Trajets passés (${past.length})`, past)
+  const hasAny = myProposed.length || myJoined.length;
+  const content = hasAny
+    ? buildSection(`🚗 Mes trips proposés (${myProposed.length})`, myProposed, true)
+      + buildSection(`🤝 Trips rejoints (${myJoined.length})`, myJoined, false)
     : `<div class="mytrips-empty">
         <div class="mytrips-empty-icon">🌊</div>
-        <div>Tu n'as pas encore proposé de trip.</div>
-        <button class="btn btn-primary" style="margin-top:1rem" onclick="closeMyTripsPage();openProposeModal()">+ Proposer un trip</button>
+        <div>Aucun trip pour l'instant.</div>
       </div>`;
 
   document.getElementById('myTripsPageContent').innerHTML = content;

@@ -376,6 +376,57 @@
 
     ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
+    /* ── LANGUAGE SWITCHER ── */
+    .lang-switcher{display:flex;gap:.28rem;align-items:center}
+    .lang-btn{padding:.22rem .52rem;border-radius:4px;border:1px solid var(--border);background:none;color:var(--text-muted);font-size:.68rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .18s;letter-spacing:.05em}
+    .lang-btn.active{background:var(--teal-glow);color:#fff;border-color:var(--teal-glow)}
+    .lang-btn:hover:not(.active){border-color:var(--primary);color:var(--text)}
+
+    /* ── EMAIL VERIFY BANNER ── */
+    .verify-banner{background:rgba(201,148,58,.1);border-bottom:1px solid rgba(201,148,58,.28);padding:.55rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:57px}
+    .verify-banner p{font-size:.78rem;color:var(--gold);display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+    .verify-banner.hidden{display:none}
+
+    /* ── TRIPS 2-COL LAYOUT ── */
+    .trips-layout{display:grid;grid-template-columns:260px 1fr;gap:1.5rem;align-items:start}
+    .trips-map-col{position:sticky;top:80px;display:flex;flex-direction:column;gap:.625rem}
+    .btn-show-fullmap{width:100%;padding:.65rem 1rem;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);cursor:pointer;font-family:inherit;font-size:.82rem;font-weight:500;transition:all .2s;text-align:left;display:flex;align-items:center;gap:.5rem}
+    .btn-show-fullmap:hover{border-color:var(--teal-glow);color:var(--teal-glow);background:rgba(71,163,154,.06)}
+    .trips-map-small-wrap{height:240px;border-radius:calc(var(--radius)*2);overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:border-color .2s}
+    .trips-map-small-wrap:hover{border-color:var(--teal-glow)}
+    @media(max-width:900px){
+      .trips-layout{grid-template-columns:1fr}
+      .trips-map-col{position:static}
+      .trips-map-small-wrap{height:180px}
+    }
+
+    /* ── FULL-PAGE TRIP MAP ── */
+    .full-map-overlay{position:fixed;inset:0;z-index:450;background:var(--bg);display:none;flex-direction:column}
+    .full-map-overlay.open{display:flex}
+    .full-map-bar{display:flex;align-items:center;gap:1rem;padding:.875rem 1.25rem;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0}
+    .full-map-title{font-family:'Cinzel',serif;font-size:1rem;font-weight:700;background:linear-gradient(to right,var(--teal-glow),var(--primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    #fullTripMap{flex:1}
+
+    /* ── MSG PAGE USER MENU ── */
+    .msg-topbar-right{margin-left:auto;display:flex;align-items:center;gap:.75rem}
+
+    /* ── MAP OVERLAY BUTTON ── */
+    .trips-map-container{position:relative}
+    .trips-map-overlay-btn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(7,8,26,.5);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);border-radius:calc(var(--radius)*2);cursor:pointer;transition:background .2s;z-index:10}
+    .trips-map-overlay-btn:hover{background:rgba(7,8,26,.3)}
+    .trips-map-overlay-btn .btn-show-fullmap{pointer-events:none;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.3);color:#fff;border-radius:var(--radius);padding:.65rem 1.1rem;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:.5rem;width:auto;text-align:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+
+    /* ── TRIP TYPE TOGGLE ── */
+    .trip-type-btn{flex:1;padding:.55rem;border-radius:var(--radius);border:1px solid var(--border);background:none;color:var(--text-muted);cursor:pointer;font-family:inherit;font-size:.82rem;font-weight:500;transition:all .2s}
+    .trip-type-btn.active{background:rgba(71,163,154,.12);border-color:var(--teal-glow);color:var(--teal-glow)}
+    .trip-type-btn:hover:not(.active){border-color:var(--primary);color:var(--text)}
+
+    /* ── DARK LEAFLET POPUP ── */
+    .ds-popup .leaflet-popup-content-wrapper{background:hsl(220,13%,12%);border:1px solid hsl(220,20%,25%);color:hsl(200,6%,95%);border-radius:.625rem;font-family:'DM Sans',sans-serif;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+    .ds-popup .leaflet-popup-tip{background:hsl(220,13%,12%)}
+    .ds-popup .leaflet-popup-close-button{color:hsl(200,10%,80%)}
+    .ds-popup .leaflet-popup-close-button:hover{color:hsl(200,6%,95%)}
+
     /* ── Tablet ── */
     @media(max-width:768px){
       .nav-links{display:none}
@@ -469,6 +520,16 @@
 </head>
 <body>
 
+<!-- EMAIL VERIFY BANNER -->
+<div id="verifyBanner" class="verify-banner hidden">
+  <p>📧 <strong>Vérifiez votre adresse email</strong> — un email de confirmation a été envoyé à <span id="verifyEmail"></span></p>
+  <div style="display:flex;gap:.5rem;align-items:center">
+    <button onclick="resendVerifyEmail()" class="btn btn-ghost" style="font-size:.72rem;padding:.28rem .7rem" data-i18n-btn="verifyResend">Renvoyer</button>
+    <button onclick="simulateVerify()" class="btn btn-primary" style="font-size:.72rem;padding:.28rem .7rem" data-i18n-btn="verifyConfirm">✓ Confirmer (démo)</button>
+    <button onclick="dismissVerifyBanner()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.1rem;padding:0 .25rem">✕</button>
+  </div>
+</div>
+
 <!-- NAV -->
 <nav>
   <a href="#" class="logo">
@@ -476,9 +537,9 @@
     <span class="logo-text">DarjaSurf</span>
   </a>
   <ul class="nav-links">
-    <li><a href="#trips">Road Trips</a></li>
-    <li><a href="#spots">Spots</a></li>
-    <li><a href="#community">Communauté</a></li>
+    <li><a href="#trips" data-i18n="navTrips">Road Trips</a></li>
+    <li><a href="#spots" data-i18n="navSpots">Spots</a></li>
+    <li><a href="#community" data-i18n="navCommunity">Communauté</a></li>
   </ul>
   <div class="nav-auth" id="navAuth"></div>
 </nav>
@@ -486,13 +547,16 @@
 <!-- MESSAGING PAGE -->
 <div id="msgPage" class="msg-page">
   <div class="msg-topbar">
-    <button class="msg-back" onclick="closeMsgPage()">← Retour</button>
+    <button class="msg-back" onclick="closeMsgPage()" data-i18n-btn="back">← Retour</button>
     <span class="msg-title">💬 DarjaSurf Messages</span>
-    <div style="margin-left:auto;font-size:.78rem;color:var(--text-muted)" id="msgBadgeTop"></div>
+    <div class="msg-topbar-right">
+      <span style="font-size:.78rem;color:var(--text-muted)" id="msgBadgeTop"></span>
+      <div id="msgNavUser"></div>
+    </div>
   </div>
   <div class="msg-body">
     <div class="msg-sidebar" id="msgSidebar">
-      <div class="msg-sidebar-hd">Conversations</div>
+      <div class="msg-sidebar-hd" data-i18n="convLabel">Conversations</div>
       <div class="msg-conv-list" id="msgConvList"></div>
     </div>
     <div class="msg-chat" id="msgChatPanel">
@@ -579,31 +643,35 @@
   </div>
 </div>
 
-<!-- HOW IT WORKS -->
-<div class="section">
-  <p class="s-label">Comment ça marche</p>
-  <h2 class="s-title">Simple comme une vague parfaite</h2>
-  <div class="how-grid">
-    <div class="how-card"><div class="how-icon">📍</div><h3>Explorez les Spots</h3><p>Touriste ou local, découvrez les meilleurs spots du Maroc de l'Atlantique à la Méditerranée.</p></div>
-    <div class="how-card"><div class="how-icon">🏄</div><h3>Proposez un Trip</h3><p>Créez un road trip ouvert à tous — indiquez le niveau, les dates, les spots et l'ambiance souhaitée.</p></div>
-    <div class="how-card"><div class="how-icon">👥</div><h3>Voyagez Ensemble</h3><p>Locaux et voyageurs se retrouvent pour partager la route, les sessions et la culture du surf.</p></div>
-    <div class="how-card"><div class="how-icon">🌅</div><h3>Vivez le Maroc</h3><p>Des rencontres authentiques, des vagues inoubliables et des souvenirs qui durent toute une vie.</p></div>
-  </div>
-</div>
-
 <!-- TRIPS -->
 <div class="section" id="trips" style="padding-top:0">
-  <div class="trips-hd">
-    <div>
-      <p class="s-label">Road Trips</p>
-      <h2 class="s-title" style="margin-bottom:0">Trips disponibles</h2>
+  <div class="trips-layout">
+    <!-- LEFT: Morocco map -->
+    <div class="trips-map-col">
+      <div class="trips-map-container">
+        <div class="trips-map-small-wrap" id="tripsMapSmall"></div>
+        <div class="trips-map-overlay-btn" onclick="openFullMap()" id="btnShowMap">
+          <button class="btn-show-fullmap">
+            🗺 <span data-i18n="showMapBtn">Afficher les trajets sur la carte</span>
+          </button>
+        </div>
+      </div>
     </div>
-    <div style="display:flex;align-items:center;gap:.875rem">
-      <span class="trips-count" id="tripsCount"></span>
-      <button class="btn btn-primary" id="btnProposeNav" onclick="openProposeModal()" style="display:none">+ Proposer un trip</button>
+    <!-- RIGHT: trips list -->
+    <div>
+      <div class="trips-hd">
+        <div>
+          <p class="s-label" data-i18n="tripsLabel">Road Trips</p>
+          <h2 class="s-title" style="margin-bottom:0" data-i18n="tripsTitle">Trips disponibles</h2>
+        </div>
+        <div style="display:flex;align-items:center;gap:.875rem">
+          <span class="trips-count" id="tripsCount"></span>
+          <button class="btn btn-primary" id="btnProposeNav" onclick="openProposeModal()" style="display:none">+ <span data-i18n="proposeTrip">Proposer un trip</span></button>
+        </div>
+      </div>
+      <div class="trips-grid" id="tripsGrid"></div>
     </div>
   </div>
-  <div class="trips-grid" id="tripsGrid"></div>
 </div>
 
 <!-- ═══════════════════════ TRIP DETAIL MODAL ═══════════════════════ -->
@@ -669,11 +737,23 @@
     </div>
     <!-- Login -->
     <form id="loginForm" onsubmit="handleLogin(event)">
-      <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="loginEmail" placeholder="you@example.com" required></div>
-      <div class="fg"><label class="fl">Mot de passe</label><input type="password" class="fi" id="loginPass" placeholder="••••••••" required></div>
-      <p class="error-msg" id="loginError">Email ou mot de passe incorrect.</p>
-      <button type="submit" class="btn-submit">Se connecter 🏄</button>
+      <div class="fg"><label class="fl" data-i18n="email">Email</label><input type="email" class="fi" id="loginEmail" placeholder="you@example.com" required></div>
+      <div class="fg"><label class="fl" data-i18n="password">Mot de passe</label><input type="password" class="fi" id="loginPass" placeholder="••••••••" required></div>
+      <p class="error-msg" id="loginError" data-i18n="loginErr">Email ou mot de passe incorrect.</p>
+      <p style="text-align:right;margin-top:-.3rem;margin-bottom:.6rem"><a href="#" onclick="showForgotPw();return false" style="font-size:.76rem;color:var(--primary)" data-i18n="forgotPwLink">Mot de passe oublié ?</a></p>
+      <button type="submit" class="btn-submit" data-i18n-btn="loginBtn">Se connecter 🏄</button>
     </form>
+    <!-- Forgot password view -->
+    <div id="forgotView" style="display:none">
+      <button onclick="switchAuthTab('login')" style="background:none;border:none;color:var(--primary);cursor:pointer;font-size:.82rem;padding:0;margin-bottom:1rem;font-family:inherit;display:flex;align-items:center;gap:.3rem">← <span data-i18n="backToLogin">Retour à la connexion</span></button>
+      <div style="margin-bottom:1rem"><p style="font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;margin-bottom:.3rem" data-i18n="forgotTitle">Mot de passe oublié</p><p style="font-size:.8rem;color:var(--text-muted)" data-i18n="forgotSub">Entrez votre email, nous vous enverrons un lien de réinitialisation.</p></div>
+      <form id="forgotForm" onsubmit="handleForgotPw(event)">
+        <div class="fg"><label class="fl" data-i18n="email">Email</label><input type="email" class="fi" id="forgotEmail" placeholder="you@example.com" required></div>
+        <p class="error-msg" id="forgotError" data-i18n="forgotErr">Aucun compte trouvé avec cet email.</p>
+        <p class="error-msg" id="forgotSuccess" style="color:#4ade80;display:none" data-i18n="forgotOk">✓ Lien envoyé ! Vérifiez votre boîte mail.</p>
+        <button type="submit" class="btn-submit" data-i18n-btn="forgotBtn">Envoyer le lien 📧</button>
+      </form>
+    </div>
     <!-- Register -->
     <form id="registerForm" style="display:none" onsubmit="handleRegister(event)">
       <div class="fg"><label class="fl">Nom complet</label><input type="text" class="fi" id="regName" placeholder="Yassine El Mansouri" required></div>
@@ -686,15 +766,6 @@
           <label class="lv-opt"><input type="radio" name="reg-level" value="intermediate"><span class="lv-emoji">🔵</span><span class="lv-name">Intermédiaire</span><span class="lv-desc">1–3 ans</span></label>
           <label class="lv-opt"><input type="radio" name="reg-level" value="advanced"><span class="lv-emoji">🟠</span><span class="lv-name">Avancé</span><span class="lv-desc">3–7 ans</span></label>
           <label class="lv-opt"><input type="radio" name="reg-level" value="expert"><span class="lv-emoji">🔴</span><span class="lv-name">Expert</span><span class="lv-desc">7+ ans</span></label>
-        </div>
-      </div>
-      <div class="fg">
-        <label class="fl">Boards max à transporter</label>
-        <div class="boards-row">
-          <button type="button" class="boards-btn" onclick="chg('regBoards',-1)">−</button>
-          <input type="number" class="fi" id="regBoards" value="2" min="1" max="10" style="width:72px;text-align:center">
-          <button type="button" class="boards-btn" onclick="chg('regBoards',1)">+</button>
-          <span style="font-size:.78rem;color:var(--text-muted)">boards</span>
         </div>
       </div>
       <p class="error-msg" id="regError">Cet email est déjà utilisé.</p>
@@ -712,7 +783,15 @@
       <h2 style="font-family:'Cinzel',serif;font-size:1.4rem;font-weight:700">Proposer un Road Trip</h2>
     </div>
     <form id="proposeForm" onsubmit="submitTrip(event)">
-      <div class="fg-row">
+      <!-- Trip type -->
+      <div class="fg">
+        <label class="fl">Type de trajet</label>
+        <div style="display:flex;gap:.5rem">
+          <button type="button" class="trip-type-btn active" id="tripTypeAR" onclick="setTripType('AR')">↔ Aller-Retour</button>
+          <button type="button" class="trip-type-btn" id="tripTypeA" onclick="setTripType('A')">→ Aller simple</button>
+        </div>
+      </div>
+      <div class="fg-row" style="margin-top:.875rem">
         <div class="fg" style="margin-bottom:0">
           <label class="fl">Départ</label>
           <div class="sf" style="min-width:0">
@@ -735,8 +814,8 @@
           <label class="fl">Date de départ</label>
           <input type="date" class="fi" id="pDateStart" required>
         </div>
-        <div class="fg" style="margin-bottom:0">
-          <label class="fl">Date de retour</label>
+        <div class="fg" style="margin-bottom:0" id="pDateEndGroup">
+          <label class="fl">Date de retour <span id="pDateEndOptional" style="color:var(--text-muted);font-weight:400"></span></label>
           <input type="date" class="fi" id="pDateEnd" required>
         </div>
       </div>
@@ -759,25 +838,15 @@
           </div>
         </div>
       </div>
-      <div class="fg-row" style="margin-top:.875rem">
-        <div class="fg" style="margin-bottom:0">
-          <label class="fl">Boards max acceptées</label>
-          <div class="boards-row">
-            <button type="button" class="boards-btn" onclick="chg('pBoards',-1)">−</button>
-            <input type="number" class="fi" id="pBoards" value="3" min="1" max="12" style="width:72px;text-align:center">
-            <button type="button" class="boards-btn" onclick="chg('pBoards',1)">+</button>
-          </div>
-        </div>
-        <div class="fg" style="margin-bottom:0">
-          <label class="fl">Prix par personne</label>
-          <div style="display:flex;gap:.5rem">
-            <select class="fi" id="pCurrency" style="flex:0 0 90px">
-              <option value="MAD" selected>MAD</option>
-              <option value="EUR">EUR €</option>
-              <option value="USD">USD $</option>
-            </select>
-            <input type="number" class="fi" id="pPrice" placeholder="2500" min="0" required style="flex:1">
-          </div>
+      <div class="fg" style="margin-top:.875rem">
+        <label class="fl">Prix par personne</label>
+        <div style="display:flex;gap:.5rem">
+          <select class="fi" id="pCurrency" style="flex:0 0 90px">
+            <option value="MAD" selected>MAD</option>
+            <option value="EUR">EUR €</option>
+            <option value="USD">USD $</option>
+          </select>
+          <input type="number" class="fi" id="pPrice" placeholder="2500" min="0" required style="flex:1">
         </div>
       </div>
       <div class="fg" style="margin-top:.875rem">
@@ -815,6 +884,15 @@
       <button type="submit" class="btn-submit">Envoyer la demande 📬</button>
     </form>
   </div>
+</div>
+
+<!-- FULL-PAGE TRIP MAP -->
+<div class="full-map-overlay" id="fullMapOverlay">
+  <div class="full-map-bar">
+    <button class="msg-back" onclick="closeFullMap()">← <span data-i18n="back">Retour</span></button>
+    <span class="full-map-title">🗺 <span data-i18n="mapTitle">Trajets au Maroc</span></span>
+  </div>
+  <div id="fullTripMap"></div>
 </div>
 
 <!-- TOAST -->
@@ -997,48 +1075,7 @@ const PLACES = [
   {name:'Aousserd',region:'Dakhla-Oued Eddahab',type:'Ville'},
 ];
 
-const STATIC_TRIPS = [
-  {
-    id:'s1', emoji:'🌊', bg:'linear-gradient(135deg,#0c4a6e,#7c2d12)',
-    dates:'28 Mar – 05 Avr 2026', from:'Agadir', to:'Taghazout',
-    km:'45 km', days:'8 jours', seats:2, boards:3,
-    lv:'advanced', lvLabel:'Avancé', av:'KR', name:'Karim R.', price:320,
-    desc:"Un trip intensif entre les deux capitales du surf marocain. On commence par les beach breaks d'Agadir pour se chauffer, puis on remonte vers les légendaires point breaks de Taghazout — Anchor Point, Hash Point, Mysteries. Sessions matin et soir garanties.",
-    stops:['Agadir — Plage Inezgane (warmup)','Taghazout Village','Anchor Point','Hash Point','Mysteries']
-  },
-  {
-    id:'s2', emoji:'🏄', bg:'linear-gradient(135deg,#164e63,#1e3a5f)',
-    dates:'02 Avr – 10 Avr 2026', from:'Imsouane', to:'Safi',
-    km:'210 km', days:'9 jours', seats:3, boards:4,
-    lv:'intermediate', lvLabel:'Intermédiaire', av:'SF', name:'Salma F.', price:280,
-    desc:"La route du nord : on part d'Imsouane et sa vague longue légendaire, puis on remonte vers Essaouira et ses vents parfaits pour le longboard, avant de terminer à Safi dont le reef break attire les pros du monde entier.",
-    stops:["Imsouane — La Cathédrale","Imsouane — La Baie","Essaouira — Plage Diabat","Safi — Reef break"]
-  },
-  {
-    id:'s3', emoji:'🌅', bg:'linear-gradient(135deg,#7c2d12,#0c4a6e)',
-    dates:'15 Avr – 25 Avr 2026', from:'Essaouira', to:'Dakhla',
-    km:'1 200 km', days:'11 jours', seats:1, boards:2,
-    lv:'expert', lvLabel:'Expert', av:'YB', name:'Youssef B.', price:650,
-    desc:"Le grand road trip atlantique, du nord au sud. On longe toute la côte sauvage, des vents d'Essaouira aux spots désertiques de Mirleft, jusqu'au paradis de kite de Dakhla. Bivouacs face à l'océan et magie du Sahara atlantique.",
-    stops:['Essaouira','Sidi Ifni','Mirleft','Tifnit','Tan-Tan Plage','Dakhla — Lagune']
-  },
-  {
-    id:'s4', emoji:'🐠', bg:'linear-gradient(135deg,#065f46,#0c4a6e)',
-    dates:'20 Avr – 27 Avr 2026', from:'Mirleft', to:'Tifnit',
-    km:'80 km', days:'7 jours', seats:4, boards:6,
-    lv:'beginner', lvLabel:'Débutant', av:'NH', name:'Nora H.', price:190,
-    desc:"Le trip idéal pour débutants ! La côte entre Mirleft et Tifnit offre des beach breaks doux et réguliers, parfaits pour progresser dans un cadre naturel préservé. Cours collectifs le matin, sessions libres l'après-midi.",
-    stops:["Mirleft — Plage principale","Plage Aftas","Sidi Mohammed Ben Abdallah","Tifnit"]
-  },
-  {
-    id:'s5', emoji:'🦅', bg:'linear-gradient(135deg,#3b0764,#0c4a6e)',
-    dates:'01 Mai – 08 Mai 2026', from:'Rabat', to:'Mehdia',
-    km:'35 km', days:'7 jours', seats:2, boards:3,
-    lv:'intermediate', lvLabel:'Intermédiaire', av:'AZ', name:'Amine Z.', price:240,
-    desc:"Les spots souvent oubliés du nord du Maroc. Rabat Oudayas offre une droite sympa en ville, puis Mehdia révèle ses bancs de sable changeants selon les marées. Culture, médinas et vagues moins fréquentées que le sud.",
-    stops:["Rabat — Plage des Oudayas","Plage de Salé","Mehdia — Pointe nord","Mehdia — Beach break central"]
-  },
-];
+const STATIC_TRIPS = [];
 
 const EMOJI_LIST = ['🌊','🏄','🌅','🐠','🦅','🌴','⚡','🌋','🌊','🏝'];
 const BG_LIST = [
@@ -1049,7 +1086,187 @@ const BG_LIST = [
   'linear-gradient(135deg,#3b0764,#0c4a6e)',
   'linear-gradient(135deg,#0f4c1a,#0c4a6e)',
 ];
-const LV_LABELS = {beginner:'Débutant',intermediate:'Intermédiaire',advanced:'Avancé',expert:'Expert'};
+const LV_LABELS_ALL = {
+  fr:{beginner:'Débutant',intermediate:'Intermédiaire',advanced:'Avancé',expert:'Expert'},
+  en:{beginner:'Beginner',intermediate:'Intermediate',advanced:'Advanced',expert:'Expert'},
+  es:{beginner:'Principiante',intermediate:'Intermedio',advanced:'Avanzado',expert:'Experto'},
+};
+let LV_LABELS = LV_LABELS_ALL.fr;
+
+// ══════════════════════════════════════════════════════
+//  TRANSLATIONS
+// ══════════════════════════════════════════════════════
+const TRANS = {
+  fr:{
+    navTrips:'Road Trips', navSpots:'Spots', navCommunity:'Communauté',
+    proposeTrip:'+ Proposer un trip', loginBtn_nav:'Connexion', registerBtn_nav:"S'inscrire",
+    ddProfile:'👤 Mon profil', ddMessages:'💬 Messages', ddPropose:'➕ Proposer un trip', ddLogout:'🚪 Déconnexion',
+    heroBadge:'🌊 Surf Road Trips — Maroc',
+    heroSub:"Touristes ou locaux, surfeurs débutants ou experts — trouvez des compagnons de trip, découvrez les meilleurs spots et parcourez les côtes marocaines du nord au sud.",
+    heroCTA1:'Rejoindre la communauté', heroCTA2:'Voir les trips',
+    statSpots:'Spots actifs', statSurfers:'Surfeurs', statTrips:'Road trips',
+    searchHint:'🔍 Trouvez votre prochain road trip au Maroc',
+    filterAllLevels:'Tous niveaux', filterSeatsAll:'Places dispo',
+    filterSeat1:'1 place', filterSeat2:'2 places', filterSeat3:'3+ places',
+    searchBtn:'Rechercher',
+    tripsLabel:'Road Trips', tripsTitle:'Trips disponibles',
+    showMapBtn:'Afficher les trajets sur la carte', mapTitle:'Trajets au Maroc',
+    back:'Retour', backToLogin:'Retour à la connexion',
+    noTrips:'Aucun trip trouvé pour ces critères.',
+    btnJoin:'Rejoindre', btnRequested:'✓ Demande envoyée', btnMine:'Mon trip',
+    email:'Email', password:'Mot de passe',
+    loginErr:'Email ou mot de passe incorrect.',
+    forgotPwLink:'Mot de passe oublié ?', forgotTitle:'Mot de passe oublié',
+    forgotSub:'Entrez votre email, nous vous enverrons un lien de réinitialisation.',
+    forgotErr:'Aucun compte trouvé avec cet email.',
+    forgotOk:'✓ Lien envoyé ! Vérifiez votre boîte mail.',
+    forgotBtn:'Envoyer le lien 📧', loginBtn:'Se connecter 🏄',
+    tabLogin:'Connexion', tabRegister:"S'inscrire",
+    verifyResend:'Renvoyer', verifyConfirm:'✓ Confirmer (démo)',
+    convLabel:'Conversations', noConv:'Aucune conversation.\nAccepte des demandes pour échanger.',
+    convDepart:'Démarrer la conversation',
+  },
+  en:{
+    navTrips:'Road Trips', navSpots:'Spots', navCommunity:'Community',
+    proposeTrip:'+ Propose a trip', loginBtn_nav:'Log in', registerBtn_nav:'Sign up',
+    ddProfile:'👤 My profile', ddMessages:'💬 Messages', ddPropose:'➕ Propose a trip', ddLogout:'🚪 Sign out',
+    heroBadge:'🌊 Surf Road Trips — Morocco',
+    heroSub:'Tourists or locals, beginner or expert surfers — find trip companions, discover the best spots and travel the Moroccan coasts from north to south.',
+    heroCTA1:'Join the community', heroCTA2:'See trips',
+    statSpots:'Active spots', statSurfers:'Surfers', statTrips:'Road trips',
+    searchHint:'🔍 Find your next road trip in Morocco',
+    filterAllLevels:'All levels', filterSeatsAll:'Available spots',
+    filterSeat1:'1 seat', filterSeat2:'2 seats', filterSeat3:'3+ seats',
+    searchBtn:'Search',
+    tripsLabel:'Road Trips', tripsTitle:'Available Trips',
+    showMapBtn:'Show trips on map', mapTitle:'Trips in Morocco',
+    back:'Back', backToLogin:'Back to login',
+    noTrips:'No trips found for these criteria.',
+    btnJoin:'Join', btnRequested:'✓ Request sent', btnMine:'My trip',
+    email:'Email', password:'Password',
+    loginErr:'Incorrect email or password.',
+    forgotPwLink:'Forgot password?', forgotTitle:'Forgot password',
+    forgotSub:'Enter your email, we will send you a reset link.',
+    forgotErr:'No account found with this email.',
+    forgotOk:'✓ Link sent! Check your inbox.',
+    forgotBtn:'Send link 📧', loginBtn:'Sign in 🏄',
+    tabLogin:'Sign in', tabRegister:'Sign up',
+    verifyResend:'Resend', verifyConfirm:'✓ Confirm (demo)',
+    convLabel:'Conversations', noConv:'No conversations yet.\nAccept requests to start chatting.',
+    convDepart:'Start conversation',
+  },
+  es:{
+    navTrips:'Road Trips', navSpots:'Spots', navCommunity:'Comunidad',
+    proposeTrip:'+ Proponer viaje', loginBtn_nav:'Entrar', registerBtn_nav:'Registrarse',
+    ddProfile:'👤 Mi perfil', ddMessages:'💬 Mensajes', ddPropose:'➕ Proponer viaje', ddLogout:'🚪 Cerrar sesión',
+    heroBadge:'🌊 Surf Road Trips — Marruecos',
+    heroSub:'Turistas o locales, principiantes o expertos — encuentra compañeros de viaje, descubre los mejores spots y recorre las costas marroquíes de norte a sur.',
+    heroCTA1:'Unirse a la comunidad', heroCTA2:'Ver viajes',
+    statSpots:'Spots activos', statSurfers:'Surfistas', statTrips:'Road trips',
+    searchHint:'🔍 Encuentra tu próximo road trip en Marruecos',
+    filterAllLevels:'Todos los niveles', filterSeatsAll:'Plazas disponibles',
+    filterSeat1:'1 plaza', filterSeat2:'2 plazas', filterSeat3:'3+ plazas',
+    searchBtn:'Buscar',
+    tripsLabel:'Road Trips', tripsTitle:'Viajes disponibles',
+    showMapBtn:'Mostrar viajes en el mapa', mapTitle:'Viajes en Marruecos',
+    back:'Volver', backToLogin:'Volver al inicio de sesión',
+    noTrips:'No se encontraron viajes para estos criterios.',
+    btnJoin:'Unirse', btnRequested:'✓ Solicitud enviada', btnMine:'Mi viaje',
+    email:'Email', password:'Contraseña',
+    loginErr:'Email o contraseña incorrectos.',
+    forgotPwLink:'¿Olvidaste tu contraseña?', forgotTitle:'Contraseña olvidada',
+    forgotSub:'Introduce tu email y te enviaremos un enlace de restablecimiento.',
+    forgotErr:'No se encontró ninguna cuenta con este email.',
+    forgotOk:'✓ ¡Enlace enviado! Revisa tu bandeja de entrada.',
+    forgotBtn:'Enviar enlace 📧', loginBtn:'Iniciar sesión 🏄',
+    tabLogin:'Iniciar sesión', tabRegister:'Registrarse',
+    verifyResend:'Reenviar', verifyConfirm:'✓ Confirmar (demo)',
+    convLabel:'Conversaciones', noConv:'Sin conversaciones.\nAcepta solicitudes para chatear.',
+    convDepart:'Iniciar conversación',
+  }
+};
+
+let currentLang = localStorage.getItem('ds_lang') || 'fr';
+function t(key) { return (TRANS[currentLang]||TRANS.fr)[key] || (TRANS.fr)[key] || key; }
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('ds_lang', lang);
+  LV_LABELS = LV_LABELS_ALL[lang] || LV_LABELS_ALL.fr;
+  applyLang();
+  updateNav();
+  renderTrips();
+}
+
+function applyLang() {
+  // Update data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const val = t(key);
+    if (val) el.textContent = val;
+  });
+  document.querySelectorAll('[data-i18n-btn]').forEach(el => {
+    const key = el.getAttribute('data-i18n-btn');
+    const val = t(key);
+    if (val) el.textContent = val;
+  });
+  // Update language buttons
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === currentLang);
+  });
+  // Update filter selects
+  const fl = document.getElementById('filterLevel');
+  if (fl) {
+    fl.options[0].text = t('filterAllLevels');
+    fl.options[1].text = LV_LABELS.beginner;
+    fl.options[2].text = LV_LABELS.intermediate;
+    fl.options[3].text = LV_LABELS.advanced;
+    fl.options[4].text = LV_LABELS.expert;
+  }
+  const fs = document.getElementById('filterSeats');
+  if (fs) {
+    fs.options[0].text = t('filterSeatsAll');
+    fs.options[1].text = t('filterSeat1');
+    fs.options[2].text = t('filterSeat2');
+    fs.options[3].text = t('filterSeat3');
+  }
+  // Update propose level select
+  const pl = document.getElementById('pLevel');
+  if (pl) {
+    pl.options[0].text = LV_LABELS.beginner;
+    pl.options[1].text = LV_LABELS.intermediate;
+    pl.options[2].text = LV_LABELS.advanced;
+    pl.options[3].text = LV_LABELS.expert;
+  }
+  // Update auth tabs
+  const tl = document.getElementById('tab-login');
+  if (tl) tl.textContent = t('tabLogin');
+  const tr2 = document.getElementById('tab-register');
+  if (tr2) tr2.textContent = t('tabRegister');
+  // Hero
+  const hb = document.querySelector('.hero-badge');
+  if (hb) hb.textContent = t('heroBadge');
+  const hs = document.querySelector('.hero-sub');
+  if (hs) hs.textContent = t('heroSub');
+  const hcta1 = document.querySelector('.hero-cta .btn-primary');
+  if (hcta1) hcta1.textContent = t('heroCTA1');
+  const hcta2 = document.querySelector('.hero-cta .btn-ghost');
+  if (hcta2) hcta2.textContent = t('heroCTA2');
+  const stL = document.querySelector('.stat-l:nth-child(1)');
+  // stats labels
+  const statEls = document.querySelectorAll('.stat-l');
+  const keys = ['statSpots','statSurfers','statTrips'];
+  statEls.forEach((el,i) => { if (keys[i]) el.textContent = t(keys[i]); });
+  // search hint
+  const sh = document.querySelector('.search-hint');
+  if (sh) sh.textContent = t('searchHint');
+  // search button
+  const sb = document.querySelector('.search-row .btn-primary');
+  if (sb) sb.textContent = t('searchBtn');
+  // forgot pw link
+  const fpl = document.querySelector('[data-i18n="forgotPwLink"]');
+  if (fpl) fpl.textContent = t('forgotPwLink');
+}
 
 function getAllTrips() {
   return [...STATIC_TRIPS, ...DB.getTrips()];
@@ -1059,46 +1276,65 @@ function getAllTrips() {
 // ══════════════════════════════════════════════════════
 //  AUTH
 // ══════════════════════════════════════════════════════
+function _langSwitcherHTML() {
+  return `<div class="lang-switcher">
+    <button class="lang-btn${currentLang==='fr'?' active':''}" data-lang="fr" onclick="setLang('fr')">FR</button>
+    <button class="lang-btn${currentLang==='en'?' active':''}" data-lang="en" onclick="setLang('en')">EN</button>
+    <button class="lang-btn${currentLang==='es'?' active':''}" data-lang="es" onclick="setLang('es')">ES</button>
+  </div>`;
+}
+
+function _userMenuHTML(user, ddId, btnId) {
+  const initials = user.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  return `<div class="user-menu" id="${btnId||'userMenu'}">
+    <div class="user-btn" onclick="toggleDD('${ddId||'userDD'}')">
+      <div class="user-avatar-sm">${initials}</div>
+      <span class="user-name-sm">${user.name.split(' ')[0]}</span>
+      <span style="font-size:.65rem;color:var(--text-muted);margin-left:.2rem">▾</span>
+    </div>
+    <div class="user-dropdown" id="${ddId||'userDD'}">
+      <div class="dd-item" onclick="openProfileModal()">${t('ddProfile')}</div>
+      <div class="dd-item" onclick="openMsgPage()" id="ddMsgItem">${t('ddMessages')}<span id="ddMsgBadge"></span></div>
+      <div class="dd-item" style="pointer-events:none;opacity:.6;font-size:.75rem">🏄 ${LV_LABELS[user.level]||user.level} · 🛹 ${user.boards} board${user.boards>1?'s':''}</div>
+      <div class="dd-sep"></div>
+      <div class="dd-item" onclick="openProposeModal()">${t('ddPropose')}</div>
+      <div class="dd-sep"></div>
+      <div class="dd-item danger" onclick="logout()">${t('ddLogout')}</div>
+    </div>
+  </div>`;
+}
+
 function updateNav() {
   const user = DB.getSession();
   const el = document.getElementById('navAuth');
   const proposeBtn = document.getElementById('btnProposeNav');
   if (user) {
-    const initials = user.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
     el.innerHTML = `
-      <button class="btn btn-primary" onclick="openProposeModal()">+ Proposer un trip</button>
-      <div class="user-menu" id="userMenu">
-        <div class="user-btn" onclick="toggleDD()">
-          <div class="user-avatar-sm">${initials}</div>
-          <span class="user-name-sm">${user.name.split(' ')[0]}</span>
-          <span style="font-size:.65rem;color:var(--text-muted);margin-left:.2rem">▾</span>
-        </div>
-        <div class="user-dropdown" id="userDD">
-          <div class="dd-item" onclick="openProfileModal()">👤 Mon profil</div>
-          <div class="dd-item" onclick="openMsgPage()" id="ddMsgItem">💬 Messages<span id="ddMsgBadge"></span></div>
-          <div class="dd-item" style="pointer-events:none;opacity:.6;font-size:.75rem">🏄 ${LV_LABELS[user.level]} · 🛹 ${user.boards} board${user.boards>1?'s':''}</div>
-          <div class="dd-sep"></div>
-          <div class="dd-item" onclick="openProposeModal()">➕ Proposer un trip</div>
-          <div class="dd-sep"></div>
-          <div class="dd-item danger" onclick="logout()">🚪 Déconnexion</div>
-        </div>
-      </div>`;
+      ${_langSwitcherHTML()}
+      <button class="btn btn-primary" onclick="openProposeModal()">${t('proposeTrip')}</button>
+      ${_userMenuHTML(user)}`;
     if (proposeBtn) proposeBtn.style.display = 'none';
+    // also render in msg page
+    const msgNav = document.getElementById('msgNavUser');
+    if (msgNav) msgNav.innerHTML = _userMenuHTML(user, 'msgUserDD', 'msgUserMenu');
+    _updateVerifyBanner(user);
   } else {
     el.innerHTML = `
-      <button class="btn btn-ghost" onclick="openAuthModal('login')">Connexion</button>
-      <button class="btn btn-primary" onclick="openAuthModal('register')">S'inscrire</button>`;
+      ${_langSwitcherHTML()}
+      <button class="btn btn-ghost" onclick="openAuthModal('login')">${t('loginBtn_nav')}</button>
+      <button class="btn btn-primary" onclick="openAuthModal('register')">${t('registerBtn_nav')}</button>`;
     if (proposeBtn) proposeBtn.style.display = 'none';
+    _hideVerifyBanner();
   }
 }
 
-function toggleDD() {
-  document.getElementById('userDD').classList.toggle('open');
+function toggleDD(ddId) {
+  const dd = document.getElementById(ddId||'userDD');
+  if (dd) dd.classList.toggle('open');
 }
 document.addEventListener('click', e => {
-  if (!e.target.closest('#userMenu')) {
-    const dd = document.getElementById('userDD');
-    if (dd) dd.classList.remove('open');
+  if (!e.target.closest('.user-menu')) {
+    document.querySelectorAll('.user-dropdown').forEach(dd => dd.classList.remove('open'));
   }
 });
 
@@ -1140,19 +1376,94 @@ function handleRegister(e) {
   const email = document.getElementById('regEmail').value.trim().toLowerCase();
   const pass  = document.getElementById('regPass').value;
   const level = document.querySelector('input[name="reg-level"]:checked').value;
-  const boards= parseInt(document.getElementById('regBoards').value)||2;
+  const boards = 1;
   const users = DB.getUsers();
   if (users.find(u=>u.email===email)) { document.getElementById('regError').style.display='block'; return; }
   const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-  const user = { id:'u'+Date.now(), name, email, password:pass, level, boards, initials };
+  const user = { id:'u'+Date.now(), name, email, password:pass, level, boards, initials, emailVerified:false };
   users.push(user);
   DB.saveUsers(users);
   DB.saveSession(user);
   closeAuthModal();
   updateNav();
   renderTrips();
-  showToast('🌊', `Profil créé ! Bienvenue ${name.split(' ')[0]} !`);
+  showToast('🌊', `${currentLang==='en'?`Profile created! Welcome ${name.split(' ')[0]}!`:currentLang==='es'?`¡Perfil creado! Bienvenido ${name.split(' ')[0]}!`:`Profil créé ! Bienvenue ${name.split(' ')[0]} !`}`);
   if (_pendingProposeAfterLogin) { setTimeout(openProposeModal, 300); _pendingProposeAfterLogin=false; }
+}
+
+// ── FORGOT PASSWORD ──
+function showForgotPw() {
+  document.getElementById('loginForm').style.display   = 'none';
+  document.getElementById('registerForm').style.display = 'none';
+  document.getElementById('forgotView').style.display  = 'block';
+  document.getElementById('tab-login').classList.remove('active');
+  document.getElementById('tab-register').classList.remove('active');
+  document.getElementById('forgotError').style.display   = 'none';
+  document.getElementById('forgotSuccess').style.display = 'none';
+  document.getElementById('forgotEmail').value = '';
+}
+
+function handleForgotPw(e) {
+  e.preventDefault();
+  const email = document.getElementById('forgotEmail').value.trim().toLowerCase();
+  const users = DB.getUsers();
+  const user  = users.find(u => u.email === email);
+  const errEl = document.getElementById('forgotError');
+  const okEl  = document.getElementById('forgotSuccess');
+  if (!user) {
+    errEl.textContent = t('forgotErr');
+    errEl.style.display = 'block';
+    okEl.style.display  = 'none';
+    return;
+  }
+  // Simulate: generate a fake reset token stored in localStorage
+  const token = Math.floor(100000 + Math.random() * 900000).toString();
+  localStorage.setItem('ds_reset_' + email, token);
+  errEl.style.display = 'none';
+  okEl.textContent = t('forgotOk') + ` (${currentLang==='en'?'Code':'Code'}: ${token})`;
+  okEl.style.display  = 'block';
+  showToast('📧', `Code: ${token}`);
+}
+
+// ── EMAIL VERIFICATION ──
+function _updateVerifyBanner(user) {
+  const banner = document.getElementById('verifyBanner');
+  const vemail = document.getElementById('verifyEmail');
+  if (!banner) return;
+  if (user && user.emailVerified === false) {
+    banner.classList.remove('hidden');
+    if (vemail) vemail.textContent = user.email;
+  } else {
+    banner.classList.add('hidden');
+  }
+}
+
+function _hideVerifyBanner() {
+  const b = document.getElementById('verifyBanner');
+  if (b) b.classList.add('hidden');
+}
+
+function resendVerifyEmail() {
+  const user = DB.getSession();
+  if (!user) return;
+  showToast('📧', currentLang==='en'?`Verification email resent to ${user.email}`:currentLang==='es'?`Email de verificación reenviado a ${user.email}`:`Email de vérification renvoyé à ${user.email}`);
+}
+
+function simulateVerify() {
+  const user = DB.getSession();
+  if (!user) return;
+  user.emailVerified = true;
+  DB.saveSession(user);
+  // update in users array
+  const users = DB.getUsers();
+  const idx = users.findIndex(u => u.id === user.id);
+  if (idx !== -1) { users[idx].emailVerified = true; DB.saveUsers(users); }
+  _hideVerifyBanner();
+  showToast('✓', currentLang==='en'?'Email verified!':currentLang==='es'?'¡Email verificado!':'Email vérifié !');
+}
+
+function dismissVerifyBanner() {
+  _hideVerifyBanner();
 }
 
 function logout() {
@@ -1167,9 +1478,28 @@ function logout() {
 // ══════════════════════════════════════════════════════
 let _pendingProposeAfterLogin = false;
 
+function setTripType(type) {
+  document.getElementById('tripTypeAR').classList.toggle('active', type === 'AR');
+  document.getElementById('tripTypeA').classList.toggle('active', type === 'A');
+  const endInput = document.getElementById('pDateEnd');
+  const endGroup = document.getElementById('pDateEndGroup');
+  const optLabel = document.getElementById('pDateEndOptional');
+  if (type === 'A') {
+    endInput.required = false;
+    endGroup.style.opacity = '.55';
+    if (optLabel) optLabel.textContent = '(optionnel)';
+  } else {
+    endInput.required = true;
+    endGroup.style.opacity = '1';
+    if (optLabel) optLabel.textContent = '';
+  }
+}
+
 function openProposeModal() {
   const user = DB.getSession();
   if (!user) { _pendingProposeAfterLogin=true; openAuthModal('login'); return; }
+  // reset trip type to AR
+  setTripType('AR');
   // set min date today
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('pDateStart').min = today;
@@ -1186,28 +1516,40 @@ function submitTrip(e) {
   const to    = document.getElementById('pTo').value.trim();
   const ds    = document.getElementById('pDateStart').value;
   const de    = document.getElementById('pDateEnd').value;
+  const isAller = document.getElementById('tripTypeA').classList.contains('active');
   const level = document.getElementById('pLevel').value;
   const seats = parseInt(document.getElementById('pSeats').value)||3;
-  const boards= parseInt(document.getElementById('pBoards').value)||3;
   const price    = parseInt(document.getElementById('pPrice').value)||0;
   const currency = document.getElementById('pCurrency').value;
   const desc     = document.getElementById('pDesc').value.trim();
 
-  const d1 = new Date(ds), d2 = new Date(de);
-  const days = Math.max(1, Math.round((d2-d1)/(1000*60*60*24)));
+  const d1 = new Date(ds);
   const fmtDate = d => d.toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'});
   const initials = user.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+
+  let datesStr, days, endDate;
+  if (isAller || !de) {
+    datesStr = fmtDate(d1);
+    days = 1;
+    endDate = ds;
+  } else {
+    const d2 = new Date(de);
+    days = Math.max(1, Math.round((d2-d1)/(1000*60*60*24)));
+    datesStr = `${fmtDate(d1)} – ${fmtDate(d2)}`;
+    endDate = de;
+  }
 
   const trip = {
     id: 'u'+Date.now(),
     emoji: EMOJI_LIST[Math.floor(Math.random()*EMOJI_LIST.length)],
     bg: BG_LIST[Math.floor(Math.random()*BG_LIST.length)],
-    dates: `${fmtDate(d1)} – ${fmtDate(d2)}`,
-    startDate: ds, endDate: de,
+    dates: datesStr,
+    startDate: ds, endDate,
+    tripType: isAller ? 'aller' : 'aller-retour',
     from, to,
-    km: '— km', days: `${days} jour${days>1?'s':''}`,
+    km: '— km', days: isAller ? 'Aller simple' : `${days} jour${days>1?'s':''}`,
     seats, seatsAvailable: seats,
-    boards, boardsMax: boards,
+    boards: 3, boardsMax: 3,
     lv: level, level, lvLabel: LV_LABELS[level],
     av: initials, name: user.name,
     hostId: user.id, userId: user.id,
@@ -1218,8 +1560,9 @@ function submitTrip(e) {
   DB.saveTrips(trips);
   closeProposeModal();
   document.getElementById('proposeForm').reset();
+  setTripType('AR');
   renderTrips();
-  showToast('🚀', `Votre trip "${from} → ${to}" est publié !`);
+  showToast('🚀', `Trip "${from} → ${to}" publié !`);
 }
 
 // ══════════════════════════════════════════════════════
@@ -1302,27 +1645,35 @@ function renderTrips() {
     return true;
   });
 
-  document.getElementById('tripsCount').textContent = `${trips.length} trip${trips.length!==1?'s':''} disponible${trips.length!==1?'s':''}`;
+  const tc = document.getElementById('tripsCount');
+  if (tc) tc.textContent = `${trips.length} trip${trips.length!==1?'s':''}`;
+
+  // Refresh small map pins
+  if (_smallMap) {
+    _smallMap.eachLayer(l => { if (l instanceof L.CircleMarker) _smallMap.removeLayer(l); });
+    _renderTripsOnSmallMap();
+  }
 
   if (!trips.length) {
-    document.getElementById('tripsGrid').innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--text-muted)">Aucun trip trouvé pour ces critères.</div>`;
+    document.getElementById('tripsGrid').innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--text-muted)">${t('noTrips')}</div>`;
     return;
   }
 
   document.getElementById('tripsGrid').innerHTML = trips.map((trip, i) => {
+    const lvLabel = (LV_LABELS_ALL[currentLang]||LV_LABELS_ALL.fr)[trip.lv] || trip.lvLabel || trip.lv;
     let actionBtn = '';
     if (isMyTrip(trip)) {
-      actionBtn = `<span class="btn-mine">Mon trip</span>`;
+      actionBtn = `<span class="btn-mine">${t('btnMine')}</span>`;
     } else if (hasRequested(trip.id)) {
-      actionBtn = `<span class="btn-requested">✓ Demande envoyée</span>`;
+      actionBtn = `<span class="btn-requested">${t('btnRequested')}</span>`;
     } else {
-      actionBtn = `<button class="btn-join" onclick="event.stopPropagation();openJoinModal('${trip.id}')">Rejoindre</button>`;
+      actionBtn = `<button class="btn-join" onclick="event.stopPropagation();openJoinModal('${trip.id}')">${t('btnJoin')}</button>`;
     }
     return `
     <div class="trip-card" onclick="openTripDetail('${trip.id}')">
       <div class="trip-img" style="background:${trip.bg}">
         <span style="z-index:1;filter:drop-shadow(0 4px 12px rgba(0,0,0,.4))">${trip.emoji}</span>
-        <span class="lvl-badge lv-${trip.lv}">${trip.lvLabel}</span>
+        <span class="lvl-badge lv-${trip.lv}">${lvLabel}</span>
       </div>
       <div class="trip-body">
         <div class="trip-dates">📅 ${trip.dates}</div>
@@ -1511,9 +1862,10 @@ function setupAC(inputId, listId, dataset, onSelect) {
     list.classList.add('open');
   });
 }
+const CITIES = PLACES.filter(p => p.type === 'Ville');
 setupAC('spotInput', 'acList',  SPOTS,  ()=>renderTrips());
-setupAC('pFrom',     'acFrom',  PLACES);
-setupAC('pTo',       'acTo',    PLACES);
+setupAC('pFrom',     'acFrom',  CITIES);
+setupAC('pTo',       'acTo',    CITIES);
 document.addEventListener('click', e => {
   ['acList','acFrom','acTo'].forEach(id => {
     if (!e.target.closest(`#${id}`) && !e.target.closest(`[id]`)) {}
@@ -1859,9 +2211,11 @@ let _currentConvKey = null;
 function openMsgPage(targetConvKey) {
   const user = DB.getSession();
   if (!user) { openAuthModal('login'); return; }
-  const dd = document.getElementById('userDD');
-  if (dd) dd.classList.remove('open');
+  document.querySelectorAll('.user-dropdown').forEach(d => d.classList.remove('open'));
   document.getElementById('msgPage').classList.add('open');
+  // Render user menu in messaging topbar
+  const msgNav = document.getElementById('msgNavUser');
+  if (msgNav) msgNav.innerHTML = _userMenuHTML(user, 'msgUserDD', 'msgUserMenu');
   _renderConvList(user, targetConvKey);
   if (targetConvKey) _openConversation(targetConvKey, user);
   _updateMsgBadge();
@@ -1878,7 +2232,7 @@ function _renderConvList(user, activeKey) {
   const el    = document.getElementById('msgConvList');
 
   if (!convs.length) {
-    el.innerHTML = `<div style="padding:1.5rem 1rem;font-size:.82rem;color:var(--text-muted);text-align:center">Aucune conversation.<br>Accepte des demandes pour échanger.</div>`;
+    el.innerHTML = `<div style="padding:1.5rem 1rem;font-size:.82rem;color:var(--text-muted);text-align:center">${t('noConv').replace('\n','<br>')}</div>`;
     return;
   }
 
@@ -1894,7 +2248,7 @@ function _renderConvList(user, activeKey) {
       <div class="conv-info">
         <div class="conv-name">${c.otherName}</div>
         <div class="conv-trip">🏄 ${c.trip.from} → ${c.trip.to}</div>
-        <div class="conv-last">${lastMsg ? (lastMsg.senderId===user.id?'Vous : ':'')+lastMsg.text.slice(0,40)+(lastMsg.text.length>40?'…':'') : 'Démarrer la conversation'}</div>
+        <div class="conv-last">${lastMsg ? (lastMsg.senderId===user.id?(currentLang==='en'?'You: ':currentLang==='es'?'Tú: ':'Vous : '):'')+lastMsg.text.slice(0,40)+(lastMsg.text.length>40?'…':'') : t('convDepart')}</div>
       </div>
       ${unread ? `<div class="conv-unread">${unread}</div>` : ''}
     </div>`;
@@ -2001,8 +2355,107 @@ function _updateMsgBadge() {
 }
 
 // ══════════════════════════════════════════════════════
+//  MOROCCO MAPS
+// ══════════════════════════════════════════════════════
+let _smallMap = null;
+let _fullMap  = null;
+
+const MOROCCO_CENTER = [31.5, -7.5];
+const MOROCCO_ZOOM   = 5;
+
+function _makeTripPinIcon(av, price, currency) {
+  const priceStr = formatPrice(price, currency);
+  const html = `<div style="background:hsl(220,13%,12%);border:1.5px solid hsl(220,20%,25%);border-radius:8px;padding:4px 8px;display:flex;align-items:center;gap:6px;box-shadow:0 4px 16px rgba(0,0,0,.55);white-space:nowrap;pointer-events:none">
+    <div style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,hsl(180,35%,45%),hsl(200,50%,65%));display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:700;color:#fff;flex-shrink:0">${av}</div>
+    <span style="font-size:.72rem;font-weight:700;color:hsl(180,60%,42%)">${priceStr}</span>
+  </div>`;
+  return L.divIcon({ className:'', html, iconSize:[null,null], iconAnchor:[0,36], popupAnchor:[60,-36] });
+}
+
+function _initSmallMap() {
+  const el = document.getElementById('tripsMapSmall');
+  if (!el || _smallMap) return;
+  _smallMap = L.map('tripsMapSmall', { zoomControl:false, attributionControl:false, dragging:false, scrollWheelZoom:false, doubleClickZoom:false, touchZoom:false });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', { maxZoom:18 }).addTo(_smallMap);
+  _smallMap.setView(MOROCCO_CENTER, MOROCCO_ZOOM);
+  _renderTripsOnSmallMap();
+}
+
+function _renderTripsOnSmallMap() {
+  if (!_smallMap) return;
+  const trips = getAllTrips();
+  trips.forEach(trip => {
+    const coord = CITY_COORDS[trip.from];
+    if (!coord) return;
+    const dot = L.circleMarker(coord, { radius:5, fillColor:'hsl(180,60%,42%)', color:'#fff', weight:1.5, fillOpacity:1 });
+    dot.addTo(_smallMap);
+  });
+}
+
+function openFullMap() {
+  const overlay = document.getElementById('fullMapOverlay');
+  overlay.classList.add('open');
+  setTimeout(() => {
+    if (_fullMap) { _fullMap.remove(); _fullMap = null; }
+    _fullMap = L.map('fullTripMap', { zoomControl:true, attributionControl:true });
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      maxZoom:18,
+      attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attributions">CARTO</a>'
+    }).addTo(_fullMap);
+    _fullMap.setView(MOROCCO_CENTER, MOROCCO_ZOOM);
+
+    const trips = getAllTrips();
+    // Group trips by departure city to avoid overlapping pins
+    const byCity = {};
+    trips.forEach(trip => {
+      const coord = CITY_COORDS[trip.from];
+      if (!coord) return;
+      if (!byCity[trip.from]) byCity[trip.from] = [];
+      byCity[trip.from].push(trip);
+    });
+
+    Object.entries(byCity).forEach(([city, cityTrips]) => {
+      const coord = CITY_COORDS[city];
+      cityTrips.forEach((trip, idx) => {
+        // Slight offset if multiple trips from same city
+        const offset = idx * 0.05;
+        const c = [coord[0] + offset, coord[1] + offset * 0.8];
+        const icon = _makeTripPinIcon(trip.av, trip.price, trip.currency);
+        const marker = L.marker(c, { icon });
+        const popupContent = `<div style="font-family:'DM Sans',sans-serif;min-width:180px">
+          <div style="font-weight:700;font-size:.9rem;margin-bottom:.3rem">${trip.from} → ${trip.to}</div>
+          <div style="font-size:.75rem;color:#aaa;margin-bottom:.4rem">📅 ${trip.dates}</div>
+          <div style="font-size:.75rem;color:#aaa">👤 ${trip.name}</div>
+        </div>`;
+        marker.bindPopup(popupContent, { className:'ds-popup' });
+        marker.addTo(_fullMap);
+      });
+    });
+  }, 80);
+}
+
+function closeFullMap() {
+  const overlay = document.getElementById('fullMapOverlay');
+  overlay.classList.remove('open');
+  if (_fullMap) { _fullMap.remove(); _fullMap = null; }
+}
+
+// ══════════════════════════════════════════════════════
+//  OVERRIDE switchAuthTab to handle forgotView
+// ══════════════════════════════════════════════════════
+const _switchAuthTabOrig = switchAuthTab;
+switchAuthTab = function(tab) {
+  const fv = document.getElementById('forgotView');
+  if (fv) fv.style.display = 'none';
+  _switchAuthTabOrig(tab);
+};
+
+// ══════════════════════════════════════════════════════
 updateNav();
 renderTrips();
+applyLang();
+// Init small map after page load
+setTimeout(_initSmallMap, 300);
 </script>
 
 <!-- ── HERO SHADER BACKGROUND (WebGL) ── -->

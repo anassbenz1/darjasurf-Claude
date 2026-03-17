@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&family=Bebas+Neue&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root{
       --bg:hsl(220,15%,8%);--card:hsl(220,13%,12%);--secondary:hsl(220,20%,18%);
@@ -909,6 +910,24 @@
   <div id="fullTripMap"></div>
 </div>
 
+<!-- ═══════════════════════ RESET PASSWORD MODAL ═══════════════════════ -->
+<div class="overlay" id="resetPassModal">
+  <div class="modal" style="max-width:400px;width:100%">
+    <div style="margin-bottom:1.25rem">
+      <p class="s-label">Sécurité</p>
+      <h2 style="font-family:'Cinzel',serif;font-size:1.2rem;font-weight:700">Nouveau mot de passe</h2>
+    </div>
+    <form onsubmit="handleResetPassword(event)">
+      <div class="fg">
+        <label class="fl">Nouveau mot de passe</label>
+        <input type="password" class="fi" id="resetNewPass" placeholder="••••••••" required minlength="6">
+      </div>
+      <p class="error-msg" id="resetPassError">Une erreur s'est produite.</p>
+      <button type="submit" class="btn-submit">Enregistrer 🔐</button>
+    </form>
+  </div>
+</div>
+
 <!-- ═══════════════════════ MY TRIPS PAGE ═══════════════════════ -->
 <div id="myTripsPage" class="msg-page">
   <div class="msg-topbar">
@@ -952,17 +971,54 @@
 // ══════════════════════════════════════════════════════
 //  DATABASE (localStorage)
 // ══════════════════════════════════════════════════════
+// ── SUPABASE ──────────────────────────────────────────
+const SUPA_URL = 'https://doytztkmtxcilhemfffj.supabase.co';
+const SUPA_KEY = 'sb_publishable_qD6uIVX4VMSDCxlKhEWl-A_mCb4EEg2';
+const _supa    = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+let _currentUser = null; // cache sync de l'utilisateur connecté
+
+async function _buildUser(session) {
+  if (!session) return null;
+  const { data: p } = await _supa.from('profiles').select('*').eq('id', session.user.id).single();
+  const name = p?.name || session.user.user_metadata?.name || 'Utilisateur';
+  return {
+    id: session.user.id,
+    email: session.user.email,
+    name,
+    level: p?.level || session.user.user_metadata?.level || 'beginner',
+    photo: p?.photo || null,
+    boards: 1,
+    initials: name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2),
+    emailVerified: !!session.user.email_confirmed_at,
+  };
+}
+
+_supa.auth.onAuthStateChange(async (event, session) => {
+  _currentUser = await _buildUser(session);
+  updateNav();
+  renderTrips();
+  if (event === 'SIGNED_IN') {
+    _updateMsgBadge();
+    if (_pendingJoinAfterLogin !== null) { setTimeout(()=>openJoinModal(_pendingJoinAfterLogin), 300); _pendingJoinAfterLogin=null; }
+    if (_pendingProposeAfterLogin) { setTimeout(openProposeModal, 300); _pendingProposeAfterLogin=false; }
+    showToast('🏄', `Bienvenue ${_currentUser?.name?.split(' ')[0] || ''} !`);
+  }
+  if (event === 'PASSWORD_RECOVERY') {
+    document.getElementById('resetPassModal').classList.add('open');
+  }
+});
+
+// ── DB (localStorage — trips/requests/messages seulement) ──
 const DB = {
-  getUsers:    () => JSON.parse(localStorage.getItem('ds_users')    || '[]'),
-  getSession:  () => JSON.parse(localStorage.getItem('ds_session')  || 'null'),
   getTrips:    () => JSON.parse(localStorage.getItem('ds_trips')    || '[]'),
   getRequests: () => JSON.parse(localStorage.getItem('ds_requests') || '[]'),
   getMessages: () => JSON.parse(localStorage.getItem('ds_messages') || '[]'),
-  saveUsers:    u => localStorage.setItem('ds_users',    JSON.stringify(u)),
-  saveSession:  s => localStorage.setItem('ds_session',  JSON.stringify(s)),
   saveTrips:    t => localStorage.setItem('ds_trips',    JSON.stringify(t)),
   saveRequests: r => localStorage.setItem('ds_requests', JSON.stringify(r)),
   saveMessages: m => localStorage.setItem('ds_messages', JSON.stringify(m)),
+  // compat shim — retourne le cache sync
+  getSession:  () => _currentUser,
+  saveSession: () => {},
 };
 
 // ══════════════════════════════════════════════════════
@@ -1340,7 +1396,7 @@ function _userMenuHTML(user, ddId, btnId) {
 }
 
 function updateNav() {
-  const user = DB.getSession();
+  const user = _currentUser;
   const el = document.getElementById('navAuth');
   const proposeBtn = document.getElementById('btnProposeNav');
   if (user) {
@@ -1349,7 +1405,6 @@ function updateNav() {
       <button class="btn btn-primary" onclick="openProposeModal()">${t('proposeTrip')}</button>
       ${_userMenuHTML(user)}`;
     if (proposeBtn) proposeBtn.style.display = 'none';
-    // also render in msg page
     _updateVerifyBanner(user);
   } else {
     el.innerHTML = `
@@ -1386,42 +1441,32 @@ function switchAuthTab(tab) {
 }
 document.getElementById('authModal').addEventListener('click', e => { if(e.target.id==='authModal') closeAuthModal(); });
 
-function handleLogin(e) {
+async function handleLogin(e) {
   e.preventDefault();
   const email = document.getElementById('loginEmail').value.trim().toLowerCase();
   const pass  = document.getElementById('loginPass').value;
-  const users = DB.getUsers();
-  const user  = users.find(u => u.email===email && u.password===pass);
-  if (!user) { document.getElementById('loginError').style.display='block'; return; }
-  DB.saveSession(user);
+  const errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+  const { error } = await _supa.auth.signInWithPassword({ email, password: pass });
+  if (error) { errEl.style.display = 'block'; errEl.textContent = 'Email ou mot de passe incorrect.'; return; }
   closeAuthModal();
-  updateNav();
-  renderTrips();
-  _updateMsgBadge();
-  showToast('🏄', `Bienvenue ${user.name.split(' ')[0]} !`);
-  if (_pendingJoinAfterLogin !== null) { setTimeout(()=>openJoinModal(_pendingJoinAfterLogin), 300); _pendingJoinAfterLogin=null; }
-  if (_pendingProposeAfterLogin) { setTimeout(openProposeModal, 300); _pendingProposeAfterLogin=false; }
 }
 
-function handleRegister(e) {
+async function handleRegister(e) {
   e.preventDefault();
   const name  = document.getElementById('regName').value.trim();
   const email = document.getElementById('regEmail').value.trim().toLowerCase();
   const pass  = document.getElementById('regPass').value;
   const level = document.querySelector('input[name="reg-level"]:checked').value;
-  const boards = 1;
-  const users = DB.getUsers();
-  if (users.find(u=>u.email===email)) { document.getElementById('regError').style.display='block'; return; }
-  const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-  const user = { id:'u'+Date.now(), name, email, password:pass, level, boards, initials, emailVerified:false };
-  users.push(user);
-  DB.saveUsers(users);
-  DB.saveSession(user);
+  const errEl = document.getElementById('regError');
+  errEl.style.display = 'none';
+  const { error } = await _supa.auth.signUp({
+    email, password: pass,
+    options: { data: { name, level }, emailRedirectTo: window.location.origin }
+  });
+  if (error) { errEl.style.display = 'block'; errEl.textContent = error.message; return; }
   closeAuthModal();
-  updateNav();
-  renderTrips();
-  showToast('🌊', `${currentLang==='en'?`Profile created! Welcome ${name.split(' ')[0]}!`:currentLang==='es'?`¡Perfil creado! Bienvenido ${name.split(' ')[0]}!`:`Profil créé ! Bienvenue ${name.split(' ')[0]} !`}`);
-  if (_pendingProposeAfterLogin) { setTimeout(openProposeModal, 300); _pendingProposeAfterLogin=false; }
+  showToast('📧', `Bienvenue ${name.split(' ')[0]} ! Vérifiez votre email pour activer votre compte.`);
 }
 
 // ── FORGOT PASSWORD ──
@@ -1436,26 +1481,19 @@ function showForgotPw() {
   document.getElementById('forgotEmail').value = '';
 }
 
-function handleForgotPw(e) {
+async function handleForgotPw(e) {
   e.preventDefault();
   const email = document.getElementById('forgotEmail').value.trim().toLowerCase();
-  const users = DB.getUsers();
-  const user  = users.find(u => u.email === email);
   const errEl = document.getElementById('forgotError');
   const okEl  = document.getElementById('forgotSuccess');
-  if (!user) {
-    errEl.textContent = t('forgotErr');
-    errEl.style.display = 'block';
-    okEl.style.display  = 'none';
-    return;
-  }
-  // Simulate: generate a fake reset token stored in localStorage
-  const token = Math.floor(100000 + Math.random() * 900000).toString();
-  localStorage.setItem('ds_reset_' + email, token);
-  errEl.style.display = 'none';
-  okEl.textContent = t('forgotOk') + ` (${currentLang==='en'?'Code':'Code'}: ${token})`;
-  okEl.style.display  = 'block';
-  showToast('📧', `Code: ${token}`);
+  errEl.style.display = 'none'; okEl.style.display = 'none';
+  const { error } = await _supa.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin
+  });
+  if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
+  okEl.textContent = t('forgotOk');
+  okEl.style.display = 'block';
+  showToast('📧', 'Lien de réinitialisation envoyé !');
 }
 
 // ── EMAIL VERIFICATION ──
@@ -1476,31 +1514,23 @@ function _hideVerifyBanner() {
   if (b) b.classList.add('hidden');
 }
 
-function resendVerifyEmail() {
-  const user = DB.getSession();
-  if (!user) return;
-  showToast('📧', currentLang==='en'?`Verification email resent to ${user.email}`:currentLang==='es'?`Email de verificación reenviado a ${user.email}`:`Email de vérification renvoyé à ${user.email}`);
+async function resendVerifyEmail() {
+  if (!_currentUser) return;
+  await _supa.auth.resend({ type: 'signup', email: _currentUser.email });
+  showToast('📧', `Email renvoyé à ${_currentUser.email}`);
 }
 
 function simulateVerify() {
-  const user = DB.getSession();
-  if (!user) return;
-  user.emailVerified = true;
-  DB.saveSession(user);
-  // update in users array
-  const users = DB.getUsers();
-  const idx = users.findIndex(u => u.id === user.id);
-  if (idx !== -1) { users[idx].emailVerified = true; DB.saveUsers(users); }
-  _hideVerifyBanner();
-  showToast('✓', currentLang==='en'?'Email verified!':currentLang==='es'?'¡Email verificado!':'Email vérifié !');
+  showToast('📧', 'Cliquez sur le lien dans votre email pour vérifier votre compte.');
 }
 
 function dismissVerifyBanner() {
   _hideVerifyBanner();
 }
 
-function logout() {
-  DB.saveSession(null);
+async function logout() {
+  await _supa.auth.signOut();
+  _currentUser = null;
   updateNav();
   renderTrips();
   showToast('👋', 'À bientôt sur DarjaSurf !');
@@ -1970,20 +2000,28 @@ function triggerPhotoUpload() {
     inp.addEventListener('change', e => {
       const file = e.target.files[0]; if (!file) return;
       const reader = new FileReader();
-      reader.onload = ev => {
-        const user = DB.getSession(); if (!user) return;
-        user.photo = ev.target.result;
-        const users = DB.getUsers();
-        const idx = users.findIndex(u => u.id === user.id);
-        if (idx !== -1) users[idx].photo = ev.target.result;
-        DB.saveUsers(users); DB.saveSession(user);
-        _renderProfileHeader(user); updateNav();
+      reader.onload = async ev => {
+        if (!_currentUser) return;
+        await _supa.from('profiles').update({ photo: ev.target.result }).eq('id', _currentUser.id);
+        _currentUser.photo = ev.target.result;
+        _renderProfileHeader(_currentUser); updateNav();
       };
       reader.readAsDataURL(file);
       inp.value = '';
     });
   }
   inp.click();
+}
+
+async function handleResetPassword(e) {
+  e.preventDefault();
+  const pass = document.getElementById('resetNewPass').value;
+  const errEl = document.getElementById('resetPassError');
+  errEl.style.display = 'none';
+  const { error } = await _supa.auth.updateUser({ password: pass });
+  if (error) { errEl.style.display = 'block'; errEl.textContent = error.message; return; }
+  document.getElementById('resetPassModal').classList.remove('open');
+  showToast('✓', 'Mot de passe mis à jour !');
 }
 
 function openMyTripsModal() { openMyTripsPage(); }

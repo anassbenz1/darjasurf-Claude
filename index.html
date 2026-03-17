@@ -77,7 +77,7 @@
     .user-btn:hover{border-color:var(--primary)}
     .user-avatar-sm{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--primary));display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:#fff;flex-shrink:0}
     .user-name-sm{font-size:.825rem;font-weight:500}
-    .user-dropdown{position:absolute;top:calc(100% + 6px);right:0;background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius)*1.5);min-width:180px;overflow:hidden;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:200}
+    .user-dropdown{position:absolute;top:calc(100% + 6px);right:0;background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius)*1.5);min-width:180px;overflow:hidden;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:500}
     .user-dropdown.open{display:block}
     .dd-item{padding:.625rem 1rem;font-size:.835rem;cursor:pointer;display:flex;align-items:center;gap:.5rem;transition:background .15s}
     .dd-item:hover{background:var(--secondary)}
@@ -170,7 +170,7 @@
     .btn-mine{background:rgba(71,163,154,.1);color:var(--accent);border:1px solid rgba(71,163,154,.3);padding:.45rem 1.1rem;border-radius:var(--radius);font-size:.775rem;font-weight:600;font-family:inherit;cursor:default}
 
     /* ── BASE MODAL ── */
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(5px);z-index:200;display:none;align-items:center;justify-content:center;padding:1rem}
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(5px);z-index:460;display:none;align-items:center;justify-content:center;padding:1rem}
     .overlay.open{display:flex}
     .modal{background:var(--card);border:1px solid var(--border);border-radius:calc(var(--radius)*3);padding:2rem;width:100%;max-width:430px;position:relative;animation:mi .28s ease;max-height:90vh;overflow-y:auto}
     @keyframes mi{from{opacity:0;transform:scale(.95) translateY(14px)}to{opacity:1;transform:scale(1) translateY(0)}}
@@ -426,7 +426,7 @@
     .mytrips-sec-title:first-child{margin-top:0}
     .mytrips-empty{text-align:center;padding:4rem 2rem;color:var(--text-muted)}
     .mytrips-empty-icon{font-size:2.5rem;margin-bottom:.75rem}
-    .mytrips-badge{position:absolute;top:.5rem;right:.5rem;background:var(--accent);color:#fff;border-radius:999px;padding:.15rem .5rem;font-size:.7rem;font-weight:700;z-index:2}
+    .mytrips-badge{position:absolute;bottom:.6rem;left:.6rem;background:var(--accent);color:#fff;border-radius:999px;padding:.2rem .6rem;font-size:.7rem;font-weight:700;z-index:3;pointer-events:none}
     .mytrips-badge.pending{background:hsl(38,90%,52%)}
     .mytrips-badge.accepted{background:hsl(150,60%,38%)}
     .trip-card-wrap{position:relative}
@@ -1996,9 +1996,23 @@ function openMyTripsPage() {
   document.querySelectorAll('.user-dropdown').forEach(d => d.classList.remove('open'));
   const user = DB.getSession(); if (!user) return;
 
+  // close any other full-page overlays first
+  document.getElementById('msgPage').classList.remove('open');
+  document.getElementById('fullMapOverlay').classList.remove('open');
+
   // render user menu in topbar
   const nav = document.getElementById('myTripsNavUser');
-  if (nav) nav.innerHTML = _userMenuHTML(user, 'myTripsDD', 'myTripsMenu');
+  if (nav) {
+    nav.innerHTML = _userMenuHTML(user, 'myTripsDD', 'myTripsMenu');
+    // patch dd-items: close myTripsPage before navigating away
+    const dd = document.getElementById('myTripsDD');
+    if (dd) dd.querySelectorAll('.dd-item[onclick]').forEach(item => {
+      const fn = item.getAttribute('onclick');
+      if (fn && !fn.includes('openMyTrips') && !fn.includes('logout') && !fn.includes('openProposeModal')) {
+        item.setAttribute('onclick', `closeMyTripsPage();${fn}`);
+      }
+    });
+  }
 
   const allTrips = getAllTrips().filter(t => t.hostId === user.id);
   const today    = new Date().toISOString().split('T')[0];

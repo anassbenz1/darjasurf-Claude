@@ -14,7 +14,7 @@
       --bg:hsl(220,15%,8%);--card:hsl(220,13%,12%);--secondary:hsl(220,20%,18%);
       --muted:hsl(220,17%,15%);--text:hsl(200,6%,95%);--text-muted:hsl(200,10%,80%);
       --primary:hsl(200,50%,65%);--accent:hsl(180,35%,45%);--border:hsl(220,20%,25%);
-      --coral:#e8604a;--gold:#c9943a;--deep:#b5402f;--teal-glow:hsl(180,60%,42%);--radius:.5rem;
+      --coral:#e8604a;--gold:#c9943a;--deep:#b5402f;--teal-glow:hsl(180,60%,42%);--radius:.5rem;--nav-h:64px;
       /* gradient-button animated properties */
       --gb-pos-x:11%;--gb-pos-y:140%;--gb-sx:150%;--gb-sy:180%;
       --gb-c1:#001a2e;--gb-c2:#0c3a4e;--gb-c3:#1a6e5e;--gb-c4:#2a8c6a;--gb-c5:#47a39a;
@@ -26,7 +26,7 @@
     body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;line-height:1.6;overflow-x:hidden}
 
     /* ── NAV ── */
-    nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:.875rem 2rem;background:rgba(10,11,17,.88);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.06)}
+    nav{position:fixed;top:0;left:0;right:0;z-index:600;display:flex;align-items:center;justify-content:space-between;padding:.875rem 2rem;background:rgba(10,11,17,.88);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.06)}
     .logo{display:flex;align-items:center;gap:.5rem;text-decoration:none}
     .logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--coral),var(--teal-glow));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
     .logo-text{font-family:'Cinzel',serif;font-size:1.2rem;font-weight:700;background:linear-gradient(to right,var(--coral),var(--teal-glow));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
@@ -275,10 +275,11 @@
     .part-slot{display:flex;flex-direction:column;align-items:center;gap:.2rem}
 
     /* ── MESSAGING PAGE ── */
-    .msg-page{position:fixed;inset:0;z-index:400;background:var(--bg);display:none;flex-direction:column}
+    .msg-page{position:fixed;top:var(--nav-h);left:0;right:0;bottom:0;z-index:400;background:var(--bg);display:none;flex-direction:column}
     .msg-page.open{display:flex}
     .msg-topbar{display:flex;align-items:center;gap:1rem;padding:.875rem 1.25rem;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0}
     .msg-back{background:none;border:1px solid var(--border);color:var(--text-muted);border-radius:var(--radius);padding:.4rem .875rem;cursor:pointer;font-family:inherit;font-size:.82rem;transition:all .2s;display:flex;align-items:center;gap:.35rem}
+    .msg-back:hover{border-color:var(--teal-glow);color:var(--text)}
     .msg-back:hover{border-color:var(--primary);color:var(--text)}
     .msg-title{font-family:'Cinzel',serif;font-size:1rem;font-weight:700;background:linear-gradient(to right,var(--teal-glow),var(--primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
     .msg-body{display:flex;flex:1;overflow:hidden}
@@ -404,7 +405,7 @@
     }
 
     /* ── FULL-PAGE TRIP MAP ── */
-    .full-map-overlay{position:fixed;inset:0;z-index:450;background:var(--bg);display:none;flex-direction:column}
+    .full-map-overlay{position:fixed;top:var(--nav-h);left:0;right:0;bottom:0;z-index:450;background:var(--bg);display:none;flex-direction:column}
     .full-map-overlay.open{display:flex}
     .full-map-bar{display:flex;align-items:center;gap:1rem;padding:.875rem 1.25rem;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0}
     .full-map-title{font-family:'Cinzel',serif;font-size:1rem;font-weight:700;background:linear-gradient(to right,var(--teal-glow),var(--primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
@@ -562,12 +563,9 @@
 <!-- MESSAGING PAGE -->
 <div id="msgPage" class="msg-page">
   <div class="msg-topbar">
-    <button class="msg-back" onclick="closeMsgPage()" data-i18n-btn="back">← Retour</button>
+    <button class="msg-back" onclick="closeMsgPage()">🏠 Accueil</button>
     <span class="msg-title">💬 DarjaSurf Messages</span>
-    <div class="msg-topbar-right">
-      <span style="font-size:.78rem;color:var(--text-muted)" id="msgBadgeTop"></span>
-      <div id="msgNavUser"></div>
-    </div>
+    <span style="font-size:.78rem;color:var(--text-muted);margin-left:auto" id="msgBadgeTop"></span>
   </div>
   <div class="msg-body">
     <div class="msg-sidebar" id="msgSidebar">
@@ -904,7 +902,7 @@
 <!-- FULL-PAGE TRIP MAP -->
 <div class="full-map-overlay" id="fullMapOverlay">
   <div class="full-map-bar">
-    <button class="msg-back" onclick="closeFullMap()">← <span data-i18n="back">Retour</span></button>
+    <button class="msg-back" onclick="closeFullMap()">🏠 Accueil</button>
     <span class="full-map-title">🗺 <span data-i18n="mapTitle">Trajets au Maroc</span></span>
   </div>
   <div id="fullTripMap"></div>
@@ -913,9 +911,8 @@
 <!-- ═══════════════════════ MY TRIPS PAGE ═══════════════════════ -->
 <div id="myTripsPage" class="msg-page">
   <div class="msg-topbar">
-    <button class="msg-back" onclick="closeMyTripsPage()">← <span>Retour</span></button>
+    <button class="msg-back" onclick="closeMyTripsPage()">🏠 Accueil</button>
     <span class="msg-title">🏄 Vos Trajets</span>
-    <div id="myTripsNavUser"></div>
   </div>
   <div class="mytrips-page-body">
     <div class="mytrips-page-hd">
@@ -1353,8 +1350,6 @@ function updateNav() {
       ${_userMenuHTML(user)}`;
     if (proposeBtn) proposeBtn.style.display = 'none';
     // also render in msg page
-    const msgNav = document.getElementById('msgNavUser');
-    if (msgNav) msgNav.innerHTML = _userMenuHTML(user, 'msgUserDD', 'msgUserMenu');
     _updateVerifyBanner(user);
   } else {
     el.innerHTML = `
@@ -2000,20 +1995,6 @@ function openMyTripsPage() {
   document.getElementById('msgPage').classList.remove('open');
   document.getElementById('fullMapOverlay').classList.remove('open');
 
-  // render user menu in topbar
-  const nav = document.getElementById('myTripsNavUser');
-  if (nav) {
-    nav.innerHTML = _userMenuHTML(user, 'myTripsDD', 'myTripsMenu');
-    // patch dd-items: close myTripsPage before navigating away
-    const dd = document.getElementById('myTripsDD');
-    if (dd) dd.querySelectorAll('.dd-item[onclick]').forEach(item => {
-      const fn = item.getAttribute('onclick');
-      if (fn && !fn.includes('openMyTrips') && !fn.includes('logout') && !fn.includes('openProposeModal')) {
-        item.setAttribute('onclick', `closeMyTripsPage();${fn}`);
-      }
-    });
-  }
-
   const allTrips = getAllTrips().filter(t => t.hostId === user.id);
   const today    = new Date().toISOString().split('T')[0];
   const upcoming = allTrips.filter(t => (t.startDate||'') >= today);
@@ -2378,9 +2359,6 @@ function openMsgPage(targetConvKey) {
   if (!user) { openAuthModal('login'); return; }
   document.querySelectorAll('.user-dropdown').forEach(d => d.classList.remove('open'));
   document.getElementById('msgPage').classList.add('open');
-  // Render user menu in messaging topbar
-  const msgNav = document.getElementById('msgNavUser');
-  if (msgNav) msgNav.innerHTML = _userMenuHTML(user, 'msgUserDD', 'msgUserMenu');
   _renderConvList(user, targetConvKey);
   if (targetConvKey) _openConversation(targetConvKey, user);
   _updateMsgBadge();

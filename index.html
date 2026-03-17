@@ -419,6 +419,18 @@
     .trips-map-overlay-btn:hover{background:rgba(7,8,26,.3)}
     .trips-map-overlay-btn .btn-show-fullmap{pointer-events:none;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.3);color:#fff;border-radius:var(--radius);padding:.65rem 1.1rem;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:.5rem;width:auto;text-align:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.4)}
 
+    /* ── MY TRIPS PAGE ── */
+    .mytrips-page-body{padding:2rem;max-width:1200px;margin:0 auto;width:100%;box-sizing:border-box}
+    .mytrips-page-hd{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem}
+    .mytrips-sec-title{font-size:.78rem;font-weight:700;color:var(--teal-glow);text-transform:uppercase;letter-spacing:.07em;margin:2rem 0 1rem;display:flex;align-items:center;gap:.5rem}
+    .mytrips-sec-title:first-child{margin-top:0}
+    .mytrips-empty{text-align:center;padding:4rem 2rem;color:var(--text-muted)}
+    .mytrips-empty-icon{font-size:2.5rem;margin-bottom:.75rem}
+    .mytrips-badge{position:absolute;top:.5rem;right:.5rem;background:var(--accent);color:#fff;border-radius:999px;padding:.15rem .5rem;font-size:.7rem;font-weight:700;z-index:2}
+    .mytrips-badge.pending{background:hsl(38,90%,52%)}
+    .mytrips-badge.accepted{background:hsl(150,60%,38%)}
+    .trip-card-wrap{position:relative}
+
     /* ── TRIP TYPE TOGGLE ── */
     .trip-type-btn{flex:1;padding:.55rem;border-radius:var(--radius);border:1px solid var(--border);background:none;color:var(--text-muted);cursor:pointer;font-family:inherit;font-size:.82rem;font-weight:500;transition:all .2s}
     .trip-type-btn.active{background:rgba(71,163,154,.12);border-color:var(--teal-glow);color:var(--teal-glow)}
@@ -898,15 +910,22 @@
   <div id="fullTripMap"></div>
 </div>
 
-<!-- ═══════════════════════ MY TRIPS MODAL ═══════════════════════ -->
-<div class="overlay" id="myTripsModal">
-  <div class="modal" style="max-width:640px;width:100%">
-    <button class="modal-close" onclick="closeMyTripsModal()">✕</button>
-    <div style="margin-bottom:1.25rem">
-      <p class="s-label">Mes voyages</p>
-      <h2 style="font-family:'Cinzel',serif;font-size:1.25rem;font-weight:700">Vos trajets à venir</h2>
+<!-- ═══════════════════════ MY TRIPS PAGE ═══════════════════════ -->
+<div id="myTripsPage" class="msg-page">
+  <div class="msg-topbar">
+    <button class="msg-back" onclick="closeMyTripsPage()">← <span>Retour</span></button>
+    <span class="msg-title">🏄 Vos Trajets</span>
+    <div id="myTripsNavUser"></div>
+  </div>
+  <div class="mytrips-page-body">
+    <div class="mytrips-page-hd">
+      <div>
+        <p class="s-label">Mes voyages</p>
+        <h2 style="font-family:'Cinzel',serif;font-size:1.5rem;font-weight:700;margin:0">Vos trajets proposés</h2>
+      </div>
+      <button class="btn btn-primary" onclick="closeMyTripsPage();openProposeModal()">+ Proposer un trip</button>
     </div>
-    <div id="myTripsContent"></div>
+    <div id="myTripsPageContent"></div>
   </div>
 </div>
 
@@ -1970,41 +1989,84 @@ function triggerPhotoUpload() {
   inp.click();
 }
 
-function openMyTripsModal() {
-  const dd = document.getElementById('userDD'); if (dd) dd.classList.remove('open');
+function openMyTripsModal() { openMyTripsPage(); }
+function closeMyTripsModal() { closeMyTripsPage(); }
+
+function openMyTripsPage() {
+  document.querySelectorAll('.user-dropdown').forEach(d => d.classList.remove('open'));
   const user = DB.getSession(); if (!user) return;
+
+  // render user menu in topbar
+  const nav = document.getElementById('myTripsNavUser');
+  if (nav) nav.innerHTML = _userMenuHTML(user, 'myTripsDD', 'myTripsMenu');
+
   const allTrips = getAllTrips().filter(t => t.hostId === user.id);
-  const today = new Date().toISOString().split('T')[0];
+  const today    = new Date().toISOString().split('T')[0];
   const upcoming = allTrips.filter(t => (t.startDate||'') >= today);
   const past     = allTrips.filter(t => (t.startDate||'') < today);
+  const reqs     = DB.getRequests();
 
-  function buildList(trips) {
-    if (!trips.length) return `<p style="color:var(--text-muted);font-size:.85rem;text-align:center;padding:1rem 0">Aucun trajet</p>`;
-    return trips.map(t => `
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid var(--border);gap:.75rem">
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:600;font-size:.9rem">${t.from} → ${t.to}</div>
-          <div style="font-size:.78rem;color:var(--text-muted);margin-top:.2rem">📅 ${t.dates}</div>
+  function buildTripCard(trip) {
+    const lvLabel      = (LV_LABELS_ALL[currentLang]||LV_LABELS_ALL.fr)[trip.lv] || trip.lv;
+    const pendingCount = reqs.filter(r => r.tripId === trip.id && r.status === 'pending').length;
+    const acceptedCount= reqs.filter(r => r.tripId === trip.id && r.status === 'accepted').length;
+    const av = trip.photo
+      ? `<img src="${trip.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+      : (trip.av || user.name.slice(0,2).toUpperCase());
+    const badge = pendingCount
+      ? `<span class="mytrips-badge pending">📬 ${pendingCount} en attente</span>`
+      : (acceptedCount ? `<span class="mytrips-badge accepted">✓ ${acceptedCount} participant${acceptedCount>1?'s':''}</span>` : '');
+    return `
+    <div class="trip-card-wrap">
+      ${badge}
+      <div class="trip-card" onclick="openTripDetail('${trip.id}')">
+        <div class="trip-img" style="background:${trip.bg}">
+          <span style="z-index:1;filter:drop-shadow(0 4px 12px rgba(0,0,0,.4))">${trip.emoji}</span>
+          <span class="lvl-badge lv-${trip.lv}">${lvLabel}</span>
         </div>
-        <div style="display:flex;gap:.5rem;align-items:center;flex-shrink:0">
-          <span class="lvl-badge lv-${t.lv}" style="position:static">${LV_LABELS[t.lv]||t.lv}</span>
-          <span style="font-size:.82rem;font-weight:600;color:var(--teal-glow)">${formatPrice(t.price,t.currency)}</span>
+        <div class="trip-body">
+          <div class="trip-dates">📅 ${trip.dates}</div>
+          <div class="trip-route"><span>${trip.from}</span><span class="arr">→</span><span>${trip.to}</span></div>
+          <div class="trip-meta">
+            <span>📏 ${trip.km}</span><span>🗓 ${trip.days}</span>
+            <span>👤 ${trip.seats} place${trip.seats>1?'s':''}</span>
+          </div>
+          <div class="trip-ft">
+            <div class="host">
+              <div class="avatar">${av}</div>
+              <span class="host-name">${trip.name||user.name}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:.625rem">
+              <div class="price">${formatPrice(trip.price,trip.currency)} <small>/ pers.</small></div>
+              <span class="btn-mine">Mon trip</span>
+            </div>
+          </div>
         </div>
-      </div>`).join('');
+      </div>
+    </div>`;
   }
 
-  document.getElementById('myTripsContent').innerHTML = `
-    <p style="font-size:.8rem;font-weight:600;color:var(--teal-glow);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">À venir (${upcoming.length})</p>
-    ${buildList(upcoming)}
-    ${past.length ? `<p style="font-size:.8rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin:1.25rem 0 .5rem">Passés (${past.length})</p>${buildList(past)}` : ''}
-    <div style="text-align:center;margin-top:1.25rem">
-      <button class="btn btn-primary" onclick="closeMyTripsModal();openProposeModal()">+ Proposer un nouveau trip</button>
-    </div>`;
-  document.getElementById('myTripsModal').classList.add('open');
+  function buildSection(label, trips) {
+    if (!trips.length) return '';
+    return `<div class="mytrips-sec-title">${label}</div>
+      <div class="trips-grid">${trips.map(buildTripCard).join('')}</div>`;
+  }
+
+  const content = allTrips.length
+    ? buildSection(`🗓 Trajets à venir (${upcoming.length})`, upcoming)
+      + buildSection(`📂 Trajets passés (${past.length})`, past)
+    : `<div class="mytrips-empty">
+        <div class="mytrips-empty-icon">🌊</div>
+        <div>Tu n'as pas encore proposé de trip.</div>
+        <button class="btn btn-primary" style="margin-top:1rem" onclick="closeMyTripsPage();openProposeModal()">+ Proposer un trip</button>
+      </div>`;
+
+  document.getElementById('myTripsPageContent').innerHTML = content;
+  document.getElementById('myTripsPage').classList.add('open');
 }
 
-function closeMyTripsModal() {
-  document.getElementById('myTripsModal').classList.remove('open');
+function closeMyTripsPage() {
+  document.getElementById('myTripsPage').classList.remove('open');
 }
 
 function _renderProfileHeader(user) {

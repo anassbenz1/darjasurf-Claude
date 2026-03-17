@@ -168,6 +168,7 @@
     .btn-join:hover{background:var(--teal-glow);color:#fff;border-color:var(--teal-glow);box-shadow:0 4px 18px rgba(71,163,154,.35);transform:translateY(-1px)}
     .btn-requested{background:rgba(90,172,224,.1);color:var(--primary);border:1px solid rgba(90,172,224,.3);padding:.45rem 1.1rem;border-radius:var(--radius);font-size:.775rem;font-weight:600;font-family:inherit;cursor:default}
     .btn-mine{background:rgba(71,163,154,.1);color:var(--accent);border:1px solid rgba(71,163,154,.3);padding:.45rem 1.1rem;border-radius:var(--radius);font-size:.775rem;font-weight:600;font-family:inherit;cursor:default}
+    .btn-full{background:rgba(232,96,74,.08);color:var(--coral);border:1px solid rgba(232,96,74,.25);padding:.45rem 1.1rem;border-radius:var(--radius);font-size:.775rem;font-weight:600;font-family:inherit;cursor:default}
 
     /* ── BASE MODAL ── */
     .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(5px);z-index:460;display:none;align-items:center;justify-content:center;padding:1rem}
@@ -1695,11 +1696,14 @@ function renderTrips() {
 
   document.getElementById('tripsGrid').innerHTML = trips.map((trip, i) => {
     const lvLabel = (LV_LABELS_ALL[currentLang]||LV_LABELS_ALL.fr)[trip.lv] || trip.lvLabel || trip.lv;
+    const seatsLeft = trip.seatsAvailable ?? trip.seats;
     let actionBtn = '';
     if (isMyTrip(trip)) {
       actionBtn = `<span class="btn-mine">${t('btnMine')}</span>`;
     } else if (hasRequested(trip.id)) {
       actionBtn = `<span class="btn-requested">${t('btnRequested')}</span>`;
+    } else if (seatsLeft <= 0) {
+      actionBtn = `<span class="btn-full">🔒 Complet</span>`;
     } else {
       actionBtn = `<button class="btn-join" onclick="event.stopPropagation();openJoinModal('${trip.id}')">${t('btnJoin')}</button>`;
     }
@@ -1714,8 +1718,7 @@ function renderTrips() {
         <div class="trip-route"><span>${trip.from}</span><span class="arr">→</span><span>${trip.to}</span></div>
         <div class="trip-meta">
           <span>📏 ${trip.km}</span><span>🗓 ${trip.days}</span>
-          <span>👤 ${trip.seats} place${trip.seats>1?'s':''}</span>
-          <span>🏄 ${trip.boards} boards max</span>
+          <span>👤 ${seatsLeft > 0 ? `${seatsLeft} place${seatsLeft>1?'s':''} dispo` : '<span style="color:var(--coral)">Complet</span>'}</span>
         </div>
         <div class="trip-ft">
           <div class="host">
@@ -1986,6 +1989,27 @@ function triggerPhotoUpload() {
 function openMyTripsModal() { openMyTripsPage(); }
 function closeMyTripsModal() { closeMyTripsPage(); }
 
+function openTripRequests(tripId) {
+  // open profile modal on "received" tab — overlay appears above myTripsPage
+  const user = DB.getSession(); if (!user) return;
+  document.querySelectorAll('.user-dropdown').forEach(d => d.classList.remove('open'));
+  _renderProfileHeader(user);
+  switchProfileTab('received');
+  document.getElementById('profileModal').classList.add('open');
+}
+
+function deleteTrip(tripId) {
+  if (!confirm('Supprimer ce trajet ? Cette action est irréversible.')) return;
+  const trips = DB.getTrips().filter(t => t.id !== tripId);
+  DB.saveTrips(trips);
+  // also remove related requests
+  const reqs = DB.getRequests().filter(r => r.tripId !== tripId);
+  DB.saveRequests(reqs);
+  renderTrips();
+  openMyTripsPage(); // refresh the page
+  showToast('🗑', 'Trajet supprimé.');
+}
+
 function openMyTripsPage() {
   document.querySelectorAll('.user-dropdown').forEach(d => d.classList.remove('open'));
   const user = DB.getSession(); if (!user) return;
@@ -2013,9 +2037,17 @@ function openMyTripsPage() {
     const badge = isOwn && pendingCount
       ? `<span class="mytrips-badge pending">📬 ${pendingCount} en attente</span>`
       : (isOwn && acceptedCount ? `<span class="mytrips-badge accepted">✓ ${acceptedCount} participant${acceptedCount>1?'s':''}</span>` : '');
+    const tripFull = isOwn && (trip.seatsAvailable ?? trip.seats) <= 0;
     const statusPill = isOwn
-      ? `<span class="btn-mine">Mon trip</span>`
+      ? (tripFull ? `<span class="btn-full">🔒 Complet</span>` : `<span class="btn-mine">Mon trip</span>`)
       : `<span class="btn-requested" style="background:rgba(71,163,154,.15);border-color:var(--teal-glow);color:var(--teal-glow)">✓ Rejoint</span>`;
+    const ownActions = isOwn ? `
+      <div style="display:flex;gap:.5rem;padding:.75rem 1.125rem;border-top:1px solid var(--border);background:rgba(0,0,0,.15)">
+        <button class="btn-accept" style="flex:1;justify-content:center" onclick="event.stopPropagation();openTripRequests('${trip.id}')">
+          📬 Demandes${pendingCount ? ` <span style="background:var(--coral);color:#fff;border-radius:999px;padding:.05rem .4rem;font-size:.68rem;margin-left:.25rem">${pendingCount}</span>` : ''}
+        </button>
+        <button class="btn-reject" onclick="event.stopPropagation();deleteTrip('${trip.id}')">🗑</button>
+      </div>` : '';
     const av = trip.av || trip.name?.slice(0,2).toUpperCase() || '??';
     return `
     <div class="trip-card-wrap">
@@ -2043,6 +2075,7 @@ function openMyTripsPage() {
             </div>
           </div>
         </div>
+        ${ownActions}
       </div>
     </div>`;
   }
@@ -2182,7 +2215,9 @@ function _buildReceivedRequests(user) {
     const tripReqs = reqs.filter(r => r.tripId === t.id);
     if (!tripReqs.length) return;
     hasAny = true;
-    html += `<div class="req-trip-lbl">🏄 ${t.from} → ${t.to} · ${t.startDate||t.dates||''}</div>`;
+    const seatsLeft = t.seatsAvailable ?? t.seats;
+    const isFull = seatsLeft <= 0;
+    html += `<div class="req-trip-lbl">🏄 ${t.from} → ${t.to} · ${t.startDate||t.dates||''}${isFull ? ' <span style="color:var(--coral);font-weight:700">· Complet</span>' : ` · <span style="color:var(--teal-glow)">${seatsLeft} place${seatsLeft>1?'s':''} dispo</span>`}</div>`;
     tripReqs.forEach(r => {
       const initials = r.userName.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
       html += `<div class="req-card" id="req-${r.id}">
@@ -2190,7 +2225,7 @@ function _buildReceivedRequests(user) {
           <div class="req-av">${initials}</div>
           <div>
             <div class="req-name">${r.userName}</div>
-            <div class="req-lv">🏄 ${LV_LABELS[r.userLevel]||r.userLevel} · 🛹 ${r.boards||'?'} board${(r.boards||1)>1?'s':''}</div>
+            <div class="req-lv">🏄 ${LV_LABELS[r.userLevel]||r.userLevel}</div>
           </div>
           <div style="margin-left:auto">
             ${r.status==='pending'
@@ -2207,9 +2242,11 @@ function _buildReceivedRequests(user) {
         <div class="req-ft">
           ${r.status==='pending' ? `
             <button class="btn-reject" onclick="rejectRequest('${r.id}','${t.id}')">✗ Refuser</button>
-            <button class="btn-accept" onclick="acceptRequest('${r.id}','${t.id}')">✓ Accepter</button>
+            ${isFull
+              ? `<button class="btn-accept" disabled style="opacity:.4;cursor:not-allowed" title="Trajet complet">🔒 Complet</button>`
+              : `<button class="btn-accept" onclick="acceptRequest('${r.id}','${t.id}')">✓ Accepter</button>`}
           ` : r.status==='accepted' ? `
-            <button class="btn-accept" style="background:rgba(71,163,154,.08)" onclick="closeProfileModal();openMsgPage(convKey('${t.id}','${user.id}','${r.userId}'))">💬 Envoyer un message</button>
+            <button class="btn-accept" style="background:rgba(71,163,154,.08)" onclick="closeProfileModal();openMsgPage(convKey('${t.id}','${user.id}','${r.userId}'))">💬 Message</button>
           ` : ''}
         </div>
       </div>`;

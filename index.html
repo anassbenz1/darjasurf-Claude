@@ -216,7 +216,10 @@
     /* ── PROFILE MODAL ── */
     .profile-modal{max-width:700px;padding:1.5rem}
     .ph{display:flex;align-items:center;gap:1rem;margin-bottom:1.375rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border)}
-    .ph-av{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--primary));display:flex;align-items:center;justify-content:center;font-size:1.35rem;font-weight:700;color:#fff;flex-shrink:0;border:2px solid rgba(71,163,154,.35)}
+    .ph-av{position:relative;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--primary));display:flex;align-items:center;justify-content:center;font-size:1.35rem;font-weight:700;color:#fff;flex-shrink:0;border:2px solid rgba(71,163,154,.35);cursor:pointer;overflow:hidden}
+    .ph-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+    .ph-av-edit{position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;font-size:.95rem;opacity:0;transition:opacity .2s;border-radius:50%}
+    .ph-av:hover .ph-av-edit{opacity:1}
     .ph-info{flex:1;min-width:0}
     .ph-name{font-weight:700;font-size:1.05rem;margin-bottom:.25rem}
     .ph-meta{display:flex;gap:.75rem;font-size:.775rem;color:var(--text-muted);flex-wrap:wrap}
@@ -895,6 +898,18 @@
   <div id="fullTripMap"></div>
 </div>
 
+<!-- ═══════════════════════ MY TRIPS MODAL ═══════════════════════ -->
+<div class="overlay" id="myTripsModal">
+  <div class="modal" style="max-width:640px;width:100%">
+    <button class="modal-close" onclick="closeMyTripsModal()">✕</button>
+    <div style="margin-bottom:1.25rem">
+      <p class="s-label">Mes voyages</p>
+      <h2 style="font-family:'Cinzel',serif;font-size:1.25rem;font-weight:700">Vos trajets à venir</h2>
+    </div>
+    <div id="myTripsContent"></div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"><span class="toast-icon" id="toastIcon"></span><span id="toastMsg"></span></div>
 
@@ -1286,16 +1301,20 @@ function _langSwitcherHTML() {
 
 function _userMenuHTML(user, ddId, btnId) {
   const initials = user.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const avatarContent = user.photo
+    ? `<img src="${user.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+    : initials;
   return `<div class="user-menu" id="${btnId||'userMenu'}">
     <div class="user-btn" onclick="toggleDD('${ddId||'userDD'}')">
-      <div class="user-avatar-sm">${initials}</div>
+      <div class="user-avatar-sm">${avatarContent}</div>
       <span class="user-name-sm">${user.name.split(' ')[0]}</span>
       <span style="font-size:.65rem;color:var(--text-muted);margin-left:.2rem">▾</span>
     </div>
     <div class="user-dropdown" id="${ddId||'userDD'}">
       <div class="dd-item" onclick="openProfileModal()">${t('ddProfile')}</div>
       <div class="dd-item" onclick="openMsgPage()" id="ddMsgItem">${t('ddMessages')}<span id="ddMsgBadge"></span></div>
-      <div class="dd-item" style="pointer-events:none;opacity:.6;font-size:.75rem">🏄 ${LV_LABELS[user.level]||user.level} · 🛹 ${user.boards} board${user.boards>1?'s':''}</div>
+      <div class="dd-item" onclick="openMyTripsModal()">📋 Vos trajets</div>
+      <div class="dd-item" style="pointer-events:none;opacity:.6;font-size:.75rem">🏄 ${LV_LABELS[user.level]||user.level}</div>
       <div class="dd-sep"></div>
       <div class="dd-item" onclick="openProposeModal()">${t('ddPropose')}</div>
       <div class="dd-sep"></div>
@@ -1638,7 +1657,9 @@ function renderTrips() {
   const seatsFilter = document.getElementById('filterSeats').value;
   const spotFilter  = document.getElementById('spotInput').value.toLowerCase().trim();
 
+  const me = DB.getSession();
   let trips = getAllTrips().filter(t => {
+    if (me && t.hostId === me.id) return false; // hide own trips
     if (lvFilter    && t.lv !== lvFilter) return false;
     if (seatsFilter && parseInt(seatsFilter) > t.seats) return false;
     if (spotFilter  && !t.from.toLowerCase().includes(spotFilter) && !t.to.toLowerCase().includes(spotFilter)) return false;
@@ -1924,6 +1945,68 @@ function openProfileModal() {
 }
 function closeProfileModal() { document.getElementById('profileModal').classList.remove('open'); }
 
+function triggerPhotoUpload() {
+  let inp = document.getElementById('_photoUploadInp');
+  if (!inp) {
+    inp = document.createElement('input');
+    inp.type = 'file'; inp.id = '_photoUploadInp'; inp.accept = 'image/*'; inp.style.display = 'none';
+    document.body.appendChild(inp);
+    inp.addEventListener('change', e => {
+      const file = e.target.files[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const user = DB.getSession(); if (!user) return;
+        user.photo = ev.target.result;
+        const users = DB.getUsers();
+        const idx = users.findIndex(u => u.id === user.id);
+        if (idx !== -1) users[idx].photo = ev.target.result;
+        DB.saveUsers(users); DB.saveSession(user);
+        _renderProfileHeader(user); updateNav();
+      };
+      reader.readAsDataURL(file);
+      inp.value = '';
+    });
+  }
+  inp.click();
+}
+
+function openMyTripsModal() {
+  const dd = document.getElementById('userDD'); if (dd) dd.classList.remove('open');
+  const user = DB.getSession(); if (!user) return;
+  const allTrips = getAllTrips().filter(t => t.hostId === user.id);
+  const today = new Date().toISOString().split('T')[0];
+  const upcoming = allTrips.filter(t => (t.startDate||'') >= today);
+  const past     = allTrips.filter(t => (t.startDate||'') < today);
+
+  function buildList(trips) {
+    if (!trips.length) return `<p style="color:var(--text-muted);font-size:.85rem;text-align:center;padding:1rem 0">Aucun trajet</p>`;
+    return trips.map(t => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid var(--border);gap:.75rem">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;font-size:.9rem">${t.from} → ${t.to}</div>
+          <div style="font-size:.78rem;color:var(--text-muted);margin-top:.2rem">📅 ${t.dates}</div>
+        </div>
+        <div style="display:flex;gap:.5rem;align-items:center;flex-shrink:0">
+          <span class="lvl-badge lv-${t.lv}" style="position:static">${LV_LABELS[t.lv]||t.lv}</span>
+          <span style="font-size:.82rem;font-weight:600;color:var(--teal-glow)">${formatPrice(t.price,t.currency)}</span>
+        </div>
+      </div>`).join('');
+  }
+
+  document.getElementById('myTripsContent').innerHTML = `
+    <p style="font-size:.8rem;font-weight:600;color:var(--teal-glow);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">À venir (${upcoming.length})</p>
+    ${buildList(upcoming)}
+    ${past.length ? `<p style="font-size:.8rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin:1.25rem 0 .5rem">Passés (${past.length})</p>${buildList(past)}` : ''}
+    <div style="text-align:center;margin-top:1.25rem">
+      <button class="btn btn-primary" onclick="closeMyTripsModal();openProposeModal()">+ Proposer un nouveau trip</button>
+    </div>`;
+  document.getElementById('myTripsModal').classList.add('open');
+}
+
+function closeMyTripsModal() {
+  document.getElementById('myTripsModal').classList.remove('open');
+}
+
 function _renderProfileHeader(user) {
   const allTrips = getAllTrips();
   const myTrips  = allTrips.filter(t => t.hostId === user.id);
@@ -1933,8 +2016,14 @@ function _renderProfileHeader(user) {
     myTrips.some(t => t.id === r.tripId) && r.status === 'pending'
   ).length;
 
+  const photoContent = user.photo
+    ? `<img src="${user.photo}" alt="photo">`
+    : (user.initials||user.name.slice(0,2).toUpperCase());
   document.getElementById('profileHeader').innerHTML = `
-    <div class="ph-av">${user.initials||user.name.slice(0,2).toUpperCase()}</div>
+    <div class="ph-av" onclick="triggerPhotoUpload()" title="Changer la photo de profil">
+      ${photoContent}
+      <span class="ph-av-edit">📷</span>
+    </div>
     <div class="ph-info">
       <div class="ph-name">${user.name}</div>
       <div class="ph-meta">
@@ -2376,8 +2465,8 @@ function _initSmallMap() {
   const el = document.getElementById('tripsMapSmall');
   if (!el || _smallMap) return;
   _smallMap = L.map('tripsMapSmall', { zoomControl:false, attributionControl:false, dragging:false, scrollWheelZoom:false, doubleClickZoom:false, touchZoom:false });
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', { maxZoom:18 }).addTo(_smallMap);
-  _smallMap.setView(MOROCCO_CENTER, MOROCCO_ZOOM);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom:18 }).addTo(_smallMap);
+  _smallMap.fitBounds([[27.2, -13.8], [36.0, -0.9]], { padding:[12,12] });
   _renderTripsOnSmallMap();
 }
 
